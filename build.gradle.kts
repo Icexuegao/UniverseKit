@@ -17,6 +17,7 @@ repositories {
 
 dependencies {
   implementation(kotlin("stdlib-jdk8"))
+  implementation(files("runnable-hiero.jar"))
 }
 
 java {

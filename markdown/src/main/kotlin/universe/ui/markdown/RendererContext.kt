@@ -80,6 +80,8 @@ abstract class RendererContext protected constructor(
     var rowHeight: Float = 0f
 
     var font: Font = parent?.font?: Fonts.def
+    var fontOffsetX: Float = parent?.fontOffsetX ?: 0f
+    var fontOffsetY: Float = parent?.fontOffsetY ?: 0f
     var fontIsItalic: Boolean = parent?.fontIsItalic ?: false
     var fontColor: Color = parent?.fontColor?: Color.white
     var fontScale: Float = parent?.fontScale?: 1f
@@ -108,6 +110,8 @@ abstract class RendererContext protected constructor(
 
     fun Markdown.FontEntry.applyFont(){
       this@Scope.font = fontModifier?: parent?.font?: Fonts.def
+      this@Scope.fontOffsetX = fontOffsetX?: parent?.fontOffsetX ?: 0f
+      this@Scope.fontOffsetY = fontOffsetY?: parent?.fontOffsetY ?: 0f
       this@Scope.fontIsItalic = isItalic ?: parent?.fontIsItalic ?: false
       this@Scope.fontColor = colorModifier?: parent?.fontColor?: Color.white
       this@Scope.fontScale = scaleModifier?: parent?.fontScale?: 1f

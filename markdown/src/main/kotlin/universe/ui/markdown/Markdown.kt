@@ -1,6 +1,7 @@
 package universe.ui.markdown
 
 import arc.graphics.Color
+import arc.graphics.g2d.DistanceFieldFont
 import arc.graphics.g2d.Draw
 import arc.graphics.g2d.Font
 import arc.scene.Element
@@ -12,6 +13,7 @@ import arc.scene.ui.layout.WidgetGroup
 import arc.struct.Seq
 import arc.util.pooling.Pool.Poolable
 import arc.util.pooling.Pools
+import mindustry.ui.Displayable
 import mindustry.ui.Fonts
 import org.commonmark.Extension
 import org.commonmark.node.Node
@@ -206,6 +208,8 @@ open class Markdown<P: MarkdownProvider> : WidgetGroup {
 
   data class FontEntry(
     val fontModifier: Font? = null,
+    val fontOffsetX: Float? = null,
+    val fontOffsetY: Float? = null,
     val isItalic: Boolean? = null,
     val colorModifier: Color? = null,
     val scaleModifier: Float? = null,
@@ -243,7 +247,14 @@ open class Markdown<P: MarkdownProvider> : WidgetGroup {
 
   class MarkdownStyle {
     private companion object{
-      val defaultFont = FontEntry(Fonts.def, false, Color.white, 1f)
+      val defaultFont = FontEntry(
+        Fonts.def,
+        0f,
+        0f,
+        false,
+        Color.white,
+        1f
+      )
       val defaultBox = Box()
       val defaultDraw = BaseDrawable()
     }
@@ -263,6 +274,7 @@ open class Markdown<P: MarkdownProvider> : WidgetGroup {
     var emFont: FontEntry = defaultFont
     var strongFont: FontEntry = defaultFont
     var headFonts: Array<FontEntry> = arrayOf()
+    var headBox: Array<Box> = arrayOf()
     var quoteBox: Box = defaultBox
     var curtainBox: Box = defaultBox
     var underLine: Drawable = defaultDraw

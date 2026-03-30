@@ -74,13 +74,30 @@ class BaseProvider: MarkdownProvider, CurtainProvider, InsProvider, Strikethroug
   }
 
   override fun RendererContext.add(node: Heading) {
-    withScope {
-      mdStyle.headFonts
-        .ifEmpty { throw IllegalArgumentException("Markdown style must provide least one HeadFonts") }
-        .let { list -> list[Mathf.clamp(node.level - 1, 0, list.size - 1)] }
-        .applyFont()
+    val box = mdStyle.headBox
+      .ifEmpty { null }
+      ?.let { list -> list[Mathf.clamp(node.level - 1, 0, list.size - 1)] }
 
-      renderChildren(node)
+    box?.also { b ->
+      withScope(
+        box = b
+      ) {
+        mdStyle.headFonts
+          .ifEmpty { throw IllegalArgumentException("Markdown style must provide least one HeadFonts") }
+          .let { list -> list[Mathf.clamp(node.level - 1, 0, list.size - 1)] }
+          .applyFont()
+
+        renderChildren(node)
+      }
+    }?: run {
+      withScope {
+        mdStyle.headFonts
+          .ifEmpty { throw IllegalArgumentException("Markdown style must provide least one HeadFonts") }
+          .let { list -> list[Mathf.clamp(node.level - 1, 0, list.size - 1)] }
+          .applyFont()
+
+        renderChildren(node)
+      }
     }
     row(Scl.scl(mdStyle.paragraphPadding))
   }
@@ -114,7 +131,8 @@ class BaseProvider: MarkdownProvider, CurtainProvider, InsProvider, Strikethroug
       ){ s ->
         val draw = DrawUrl.get(
           s.toString(), node.destination,
-          font, fontIsItalic, fontColor, fontScale,
+          font, fontOffsetX, fontOffsetY,
+          fontIsItalic, fontColor, fontScale,
           mdStyle.linkOverColor
         )
         draw(draw)
@@ -188,6 +206,8 @@ class BaseProvider: MarkdownProvider, CurtainProvider, InsProvider, Strikethroug
           draw(DrawStr.get(
             "${format(n)}.",
             font,
+            fontOffsetX,
+            fontOffsetY,
             false,
             fontColor,
             fontScale

@@ -11,6 +11,8 @@ private const val MAX_SPLITTABLE_WORD_SIZE = 32
 fun RendererContext.drawTextWrap(
   str: String,
   font: Font = getScope().font,
+  offsetX: Float = getScope().fontOffsetX,
+  offsetY: Float = getScope().fontOffsetY,
   italic: Boolean = getScope().fontIsItalic,
   scl: Float = getScope().fontScale,
   doDraw: Cons<CharSequence> = Cons{ s ->
@@ -18,6 +20,8 @@ fun RendererContext.drawTextWrap(
       DrawStr.get(
         s.toString(),
         font,
+        offsetX,
+        offsetY,
         italic,
         getScope().fontColor,
         scl,

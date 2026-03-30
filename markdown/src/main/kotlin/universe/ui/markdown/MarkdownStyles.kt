@@ -6,6 +6,7 @@ import arc.files.Fi
 import arc.freetype.FreeTypeFontGenerator
 import arc.freetype.FreeTypeFontGenerator.FreeTypeFontParameter
 import arc.graphics.Color
+import arc.graphics.g2d.DistanceFieldFont
 import arc.graphics.g2d.Draw
 import arc.graphics.g2d.Fill
 import arc.graphics.g2d.Lines
@@ -19,6 +20,7 @@ import mindustry.graphics.Pal
 import mindustry.ui.Fonts
 import mindustry.ui.Styles
 import universe.ui.markdown.Markdown.MarkdownStyle
+import universe.ui.markdown.util.UnkFontGenerator
 import java.io.InputStream
 
 object MarkdownStyles {
@@ -30,6 +32,24 @@ object MarkdownStyles {
       incremental = true
       borderColor = color
     })
+  private val defDistanced = UnkFontGenerator(Core.files.internal("fonts/font.woff"))
+    .generateFont(UnkFontGenerator.UnkFontParameter().apply {
+      size = Scl.scl(19f).toInt()
+      distanceFieldColor = Color.white
+      distanceFieldDownscale = 1
+      distanceFieldSpread = 4f
+      incremental = true
+
+      shadowOffsetY = 2
+
+      padLeft = 4
+      padRight = 4
+      padTop = 4
+      padBottom = 4
+    }).also {
+      (it as DistanceFieldFont).distanceFieldSmoothing = 1f
+      it.data.cursorX
+    }
   private val mono = try {
     MarkdownStyles::class.java.getClassLoader().getResource("fonts/JetBrainsMono.ttf").let { url ->
       val fi = object: Fi(url!!.file, Files.FileType.classpath){
@@ -79,9 +99,10 @@ object MarkdownStyles {
     )
     headFonts = Array(6){ i ->
       Markdown.FontEntry(
-        fontModifier = Fonts.def,
+        fontModifier = defDistanced,
         colorModifier = if (i == 5) Color.gray else Color.white,
         scaleModifier = if (i < 5) 5f/(i + 1) else 1f,
+        fontOffsetX = -4f*(if (i < 5) 5f/(i + 1) else 1f)
       )
     }
     quoteBox = Markdown.Box(

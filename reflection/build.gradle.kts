@@ -31,6 +31,8 @@ dependencies {
 
   implementation(project(":platform"))
   implementation(project(":platform:expects"))
+
+  testImplementation("org.apache.poi:poi:5.2.3")
 }
 
 java {
