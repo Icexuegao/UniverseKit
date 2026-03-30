@@ -15,7 +15,7 @@ class MDLayoutRenderer private constructor(builder: Builder) {
     nodeRendererFactories = factories.toList()
   }
 
-  fun createContext(element: Markdown<*>): RendererContext {
+  fun createContext(element: Markdown): RendererContext {
     context = this.RendererContextImpl(element)
     return context!!
   }
@@ -52,7 +52,7 @@ class MDLayoutRenderer private constructor(builder: Builder) {
     fun extend(rendererBuilder: Builder)
   }
 
-  internal inner class RendererContextImpl(element: Markdown<*>): RendererContext(element) {
+  internal inner class RendererContextImpl(element: Markdown): RendererContext(element) {
     private val nodeRendererMap: NodeRendererMap = NodeRendererMap()
 
     init {

@@ -1,14 +1,10 @@
 package universe.ui.markdown
 
-import arc.Core
 import arc.func.Cons
 import arc.graphics.Color
-import arc.graphics.g2d.DistanceFieldFont
 import arc.graphics.g2d.Draw
 import arc.graphics.g2d.Font
 import arc.scene.Element
-import arc.scene.event.EventListener
-import arc.scene.event.SceneEvent
 import arc.scene.event.Touchable
 import arc.scene.style.BaseDrawable
 import arc.scene.style.Drawable
@@ -19,7 +15,6 @@ import arc.util.Log
 import arc.util.pooling.Pool.Poolable
 import arc.util.pooling.Pools
 import mindustry.Vars
-import mindustry.ui.Displayable
 import mindustry.ui.Fonts
 import org.commonmark.Extension
 import org.commonmark.node.Node
@@ -27,13 +22,8 @@ import org.commonmark.parser.Parser
 import org.commonmark.parser.Parser.ParserExtension
 import universe.ui.markdown.MDLayoutRenderer.DrawRendererExtension
 
-fun Markdown(
-  md: String,
-  style: Markdown.MarkdownStyle,
-) = Markdown(BaseProvider(), md, style)
-
 /**Markdown文档渲染元素。*/
-open class Markdown<P: MarkdownProvider> : WidgetGroup {
+open class Markdown : WidgetGroup {
   var wrapContent: Boolean = true
 
   private val markdownDraws = Seq<MarkdownDraw>()
@@ -52,10 +42,11 @@ open class Markdown<P: MarkdownProvider> : WidgetGroup {
   internal val parser: Parser?
   internal val renderer: MDLayoutRenderer
 
-  internal var provider: P
+  internal var provider: MarkdownProvider
   internal var rendererContext: RendererContext
 
-  internal constructor(provider: P, md: String, style: MarkdownStyle) {
+  @JvmOverloads
+  constructor(content: String, style: MarkdownStyle, provider: MarkdownProvider = BaseProvider()) {
     val extensions = provider.extensions()
     checkExtensions(extensions)
 
@@ -71,7 +62,7 @@ open class Markdown<P: MarkdownProvider> : WidgetGroup {
 
     rendererContext = renderer.createContext(this)
 
-    node = parser.parse(md)
+    node = parser.parse(content)
     touchable = Touchable.childrenOnly
   }
 
@@ -79,7 +70,7 @@ open class Markdown<P: MarkdownProvider> : WidgetGroup {
    *
    * @hidden
    */
-  constructor(parent: Markdown<P>, node: Node) {
+  internal constructor(parent: Markdown, node: Node) {
     this.provider = parent.provider
     parser = null
     renderer = MDLayoutRenderer.builder().extensions(provider.extensions()).build()
@@ -101,13 +92,13 @@ open class Markdown<P: MarkdownProvider> : WidgetGroup {
 
   fun getContext() = rendererContext
 
-  fun setProvider(provider: P) {
+  fun setProvider(provider: MarkdownProvider) {
     this.provider = provider
     this.rendererContext = renderer.createContext(this)
     invalidate()
   }
 
-  fun getProvider(): P = provider
+  fun getProvider(): MarkdownProvider = provider
 
   fun setDocument(string: String) {
     node = parser!!.parse(string)

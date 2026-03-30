@@ -42,7 +42,7 @@ import kotlin.concurrent.thread
 private var clickListenerField = Button::class.java.getDeclaredField("clickListener")
   .also { it.isAccessible = true }
 
-class BaseProvider: MarkdownProvider, CurtainProvider, InsProvider, StrikethroughProvider, TableProvider {
+open class BaseProvider: MarkdownProvider, CurtainProvider, InsProvider, StrikethroughProvider, TableProvider {
   override fun extensions() = listOf(
     ImgAttrExtension.create(),
     TablesExtension.create(),

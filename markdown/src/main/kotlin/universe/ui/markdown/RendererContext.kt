@@ -16,7 +16,7 @@ import universe.ui.markdown.elemdraw.DrawImg
 import kotlin.math.max
 
 abstract class RendererContext protected constructor(
-  private val element: Markdown<*>
+  private val element: Markdown
 ) {
   companion object {
     private val SCHEME_TYPE_PATTERN = "\\w+:".toRegex()
@@ -24,7 +24,7 @@ abstract class RendererContext protected constructor(
 
   private val markdownDraws = Seq<MarkdownDraw>()
   private val attachedVars = ObjectMap<String, Any>()
-  private val chapterEntries = Seq<Markdown<*>.ChapterEntry>()
+  private val chapterEntries = Seq<Markdown.ChapterEntry>()
 
   private var currentScope: Scope? = null
   private var rootScope: Scope? = null
@@ -323,15 +323,15 @@ abstract class RendererContext protected constructor(
     return curr
   }
 
-  fun findChapter(title: String, level: Int = -1): Markdown<*>.ChapterEntry? {
+  fun findChapter(title: String, level: Int = -1): Markdown.ChapterEntry? {
     return chapterEntries.find { (level == -1 || level == it.level) && it.title == title }
   }
 
-  fun findChapter(pattern: Regex, level: Int = -1): Markdown<*>.ChapterEntry? {
+  fun findChapter(pattern: Regex, level: Int = -1): Markdown.ChapterEntry? {
     return chapterEntries.find { (level == -1 || level == it.level) && it.title.matches(pattern) }
   }
 
-  fun filterChapter(pattern: Regex, level: Int = -1): List<Markdown<*>.ChapterEntry> {
+  fun filterChapter(pattern: Regex, level: Int = -1): List<Markdown.ChapterEntry> {
     return chapterEntries.filter { (level == -1 || level == it.level) && it.title.matches(pattern) }
   }
 
