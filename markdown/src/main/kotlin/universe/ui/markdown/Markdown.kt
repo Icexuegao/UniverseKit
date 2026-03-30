@@ -1,18 +1,24 @@
 package universe.ui.markdown
 
+import arc.Core
+import arc.func.Cons
 import arc.graphics.Color
 import arc.graphics.g2d.DistanceFieldFont
 import arc.graphics.g2d.Draw
 import arc.graphics.g2d.Font
 import arc.scene.Element
+import arc.scene.event.EventListener
+import arc.scene.event.SceneEvent
 import arc.scene.event.Touchable
 import arc.scene.style.BaseDrawable
 import arc.scene.style.Drawable
 import arc.scene.ui.ScrollPane
 import arc.scene.ui.layout.WidgetGroup
 import arc.struct.Seq
+import arc.util.Log
 import arc.util.pooling.Pool.Poolable
 import arc.util.pooling.Pools
+import mindustry.Vars
 import mindustry.ui.Displayable
 import mindustry.ui.Fonts
 import org.commonmark.Extension
@@ -93,6 +99,8 @@ open class Markdown<P: MarkdownProvider> : WidgetGroup {
     }
   }
 
+  fun getContext() = rendererContext
+
   fun setProvider(provider: P) {
     this.provider = provider
     this.rendererContext = renderer.createContext(this)
@@ -113,6 +121,28 @@ open class Markdown<P: MarkdownProvider> : WidgetGroup {
 
   fun getStyle(): MarkdownStyle {
     return style!!
+  }
+
+  fun directlyOpenUrl(){
+    urlClicked{ url ->
+      try {
+        rendererContext.openUrl(url)
+      } catch (e: Exception) {
+        Log.err(e)
+        Vars.ui.showException(e)
+      }
+    }
+  }
+
+  fun urlClicked(callback: Cons<String>) {
+    addListener {e ->
+      if (e is UrlClickedEvent){
+        callback.get(e.clickedUrl)
+        return@addListener true
+      }
+
+      false
+    }
   }
 
   override fun layout() {
@@ -329,6 +359,16 @@ open class Markdown<P: MarkdownProvider> : WidgetGroup {
       @JvmStatic protected val tmp1: Color = Color()
       @JvmStatic protected val tmp2: Color = Color()
     }
+  }
+
+  inner class ChapterEntry(
+    val title: String,
+    val offsetX: Float,
+    val offsetY: Float,
+    val level: Int
+  ){
+    val drawX: Float get() = offsetX
+    val drawY: Float get() = height - offsetY
   }
 
   interface ActivityDrawer {

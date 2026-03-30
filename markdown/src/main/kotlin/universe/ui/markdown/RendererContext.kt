@@ -24,6 +24,7 @@ abstract class RendererContext protected constructor(
 
   private val markdownDraws = Seq<MarkdownDraw>()
   private val attachedVars = ObjectMap<String, Any>()
+  private val chapterEntries = Seq<Markdown<*>.ChapterEntry>()
 
   private var currentScope: Scope? = null
   private var rootScope: Scope? = null
@@ -123,6 +124,7 @@ abstract class RendererContext protected constructor(
     currentScope = null
     markdownDraws.clear()
     attachedVars.clear()
+    chapterEntries.clear()
   }
 
   private fun resolveUrlHandler(url: String): UrlHandler {
@@ -247,7 +249,7 @@ abstract class RendererContext protected constructor(
     fillX: Boolean = false,
     inlineBreak: Boolean = false,
     callback: Scope.() -> Unit
-  ) {
+  ): Scope {
     insertScope(
       drawProvider,
       paddingLeft, paddingRight, paddingTop, paddingBottom,
@@ -256,7 +258,7 @@ abstract class RendererContext protected constructor(
       fillX,
       inlineBreak,
     ).callback()
-    popScope()
+    return popScope()
   }
 
   fun insertScope(
@@ -320,6 +322,29 @@ abstract class RendererContext protected constructor(
 
     return curr
   }
+
+  fun findChapter(title: String, level: Int = -1): Markdown<*>.ChapterEntry? {
+    return chapterEntries.find { (level == -1 || level == it.level) && it.title == title }
+  }
+
+  fun findChapter(pattern: Regex, level: Int = -1): Markdown<*>.ChapterEntry? {
+    return chapterEntries.find { (level == -1 || level == it.level) && it.title.matches(pattern) }
+  }
+
+  fun filterChapter(pattern: Regex, level: Int = -1): List<Markdown<*>.ChapterEntry> {
+    return chapterEntries.filter { (level == -1 || level == it.level) && it.title.matches(pattern) }
+  }
+
+  fun pushChapterEntry(title: String, offsetX: Float, offsetY: Float, level: Int) {
+    chapterEntries.add(element.ChapterEntry(
+      title,
+      offsetX,
+      offsetY,
+      level
+    ))
+  }
+
+  fun captureCount() = chapterEntries.size
 
   fun draw(markdownDraw: MarkdownDraw) {
     val curr = getScope()

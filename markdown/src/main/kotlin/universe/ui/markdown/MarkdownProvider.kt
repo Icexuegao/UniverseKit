@@ -32,6 +32,30 @@ interface MarkdownProvider {
     return null
   }
 
+  fun Node.eachDescendants(callback: Cons<Node>){
+    var node = firstChild
+    while (node != null) {
+      callback.get(node)
+      node.eachDescendants(callback)
+      node = node.next
+    }
+  }
+
+  fun Node.findDescendants(filter: Boolf<Node>): Node?{
+    var node = firstChild
+    while (node != null) {
+      if (filter.get(node)) return node
+      else {
+        val des = node.findDescendants(filter)
+        if (des != null) return des
+
+        node = node.next
+      }
+    }
+
+    return null
+  }
+
   fun extensions(): List<Extension>
   fun urlHandlers(): List<UrlHandler>
 

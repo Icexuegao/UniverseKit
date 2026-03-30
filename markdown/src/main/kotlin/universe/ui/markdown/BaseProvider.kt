@@ -78,26 +78,28 @@ class BaseProvider: MarkdownProvider, CurtainProvider, InsProvider, Strikethroug
       .ifEmpty { null }
       ?.let { list -> list[Mathf.clamp(node.level - 1, 0, list.size - 1)] }
 
+    fun RendererContext.Scope.draw(){
+      mdStyle.headFonts
+        .ifEmpty { throw IllegalArgumentException("Markdown style must provide least one HeadFonts") }
+        .let { list -> list[Mathf.clamp(node.level - 1, 0, list.size - 1)] }
+        .applyFont()
+
+      renderChildren(node)
+
+      val firstText = node.findDescendants { it is Text } as? Text
+
+      pushChapterEntry(
+        firstText?.literal?: "capter-${captureCount()}",
+        offsetX,
+        offsetY,
+        node.level
+      )
+    }
+
     box?.also { b ->
-      withScope(
-        box = b
-      ) {
-        mdStyle.headFonts
-          .ifEmpty { throw IllegalArgumentException("Markdown style must provide least one HeadFonts") }
-          .let { list -> list[Mathf.clamp(node.level - 1, 0, list.size - 1)] }
-          .applyFont()
-
-        renderChildren(node)
-      }
+      withScope(box = b){ draw() }
     }?: run {
-      withScope {
-        mdStyle.headFonts
-          .ifEmpty { throw IllegalArgumentException("Markdown style must provide least one HeadFonts") }
-          .let { list -> list[Mathf.clamp(node.level - 1, 0, list.size - 1)] }
-          .applyFont()
-
-        renderChildren(node)
-      }
+      withScope { draw() }
     }
     row(Scl.scl(mdStyle.paragraphPadding))
   }

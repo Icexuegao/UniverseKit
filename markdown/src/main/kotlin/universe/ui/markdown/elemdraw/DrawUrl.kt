@@ -1,6 +1,8 @@
 package universe.ui.markdown.elemdraw
 
 import arc.graphics.Color
+import arc.graphics.g2d.DistanceFieldFont
+import arc.graphics.g2d.Draw
 import arc.graphics.g2d.Font
 import arc.math.Affine2
 import arc.math.Mat
@@ -83,6 +85,20 @@ open class DrawUrl: Markdown.MarkdownDraw(), Markdown.ActivityDrawer {
         else {
           super.applyTransform(transform)
         }
+      }
+
+      override fun drawChildren() {
+        val shouldDistanceField = font is DistanceFieldFont
+
+        if (shouldDistanceField) {
+          Draw.shader(distanceFieldShader)
+          distanceFieldShader.bind()
+          distanceFieldShader.setUniformf("u_smoothing", 0.5f * font.scaleX)
+        }
+
+        super.drawChildren()
+
+        if (shouldDistanceField) Draw.shader()
       }
     }
     button.isTransform = italic
