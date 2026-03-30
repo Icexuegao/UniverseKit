@@ -4,11 +4,11 @@ plugins {
   kotlin("jvm") version "2.2.20"
 }
 
-val mindustryVersion = "v154"
-val arcVersion = "v154"
+val mindustryVersion = "v156"
+val arcVersion = "v156"
 
 group = "com.github.ebwilson"
-version = "1.0"
+version = "1.1"
 
 repositories {
   mavenLocal()
