@@ -3,8 +3,6 @@ package universe.ui.markdown
 import arc.Core
 import arc.Files
 import arc.files.Fi
-import arc.freetype.FreeTypeFontGenerator
-import arc.freetype.FreeTypeFontGenerator.FreeTypeFontParameter
 import arc.graphics.Color
 import arc.graphics.g2d.DistanceFieldFont
 import arc.graphics.g2d.Draw
@@ -24,31 +22,38 @@ import universe.ui.markdown.util.UnkFontGenerator
 import java.io.InputStream
 
 object MarkdownStyles {
-  private val strong = FreeTypeFontGenerator(Core.files.internal("fonts/font.woff"))
-    .generateFont(FreeTypeFontParameter().apply {
+  private val strong = UnkFontGenerator(Core.files.internal("fonts/font.woff"))
+    .generateFont(UnkFontGenerator.UnkFontParameter().apply {
       size = Scl.scl(19f).toInt()
       borderWidth = Scl.scl(0.3f)
       shadowOffsetY = 2
       incremental = true
       borderColor = color
-    })
-  private val defDistanced = UnkFontGenerator(Core.files.internal("fonts/font.woff"))
-    .generateFont(UnkFontGenerator.UnkFontParameter().apply {
-      size = Scl.scl(19f).toInt()
-      distanceFieldColor = Color.white
+
       distanceFieldDownscale = 1
       distanceFieldSpread = 4f
-      incremental = true
-
-      shadowOffsetY = 2
-
       padLeft = 4
       padRight = 4
       padTop = 4
       padBottom = 4
     }).also {
       (it as DistanceFieldFont).distanceFieldSmoothing = 1f
-      it.data.cursorX
+    }
+  private val defDistanced = UnkFontGenerator(Core.files.internal("fonts/font.woff"))
+    .generateFont(UnkFontGenerator.UnkFontParameter().apply {
+      size = Scl.scl(19f).toInt()
+      shadowColor = Color.darkGray
+      shadowOffsetY = 2
+      incremental = true
+
+      distanceFieldDownscale = 1
+      distanceFieldSpread = 4f
+      padLeft = 4
+      padRight = 4
+      padTop = 4
+      padBottom = 4
+    }).also {
+      (it as DistanceFieldFont).distanceFieldSmoothing = 1f
     }
   private val mono = try {
     MarkdownStyles::class.java.getClassLoader().getResource("fonts/JetBrainsMono.ttf").let { url ->
@@ -56,16 +61,23 @@ object MarkdownStyles {
         override fun read(): InputStream = url!!.openStream()
       }
 
-      val gen = FreeTypeFontGenerator(fi)
-      gen.generateFont(object : FreeTypeFontParameter() {
-        init {
-          size = Scl.scl(19f).toInt()
-          borderWidth = Scl.scl(0.3f)
-          shadowOffsetY = 2
-          incremental = true
-          borderColor = color
-        }
-      })
+      val gen = UnkFontGenerator(fi)
+      gen.generateFont( UnkFontGenerator.UnkFontParameter().apply{
+        size = Scl.scl(19f).toInt()
+        borderWidth = Scl.scl(0.3f)
+        shadowOffsetY = 2
+        incremental = true
+        borderColor = color
+
+        distanceFieldDownscale = 1
+        distanceFieldSpread = 4f
+        padLeft = 4
+        padRight = 4
+        padTop = 4
+        padBottom = 4
+      }).also {
+        (it as DistanceFieldFont).distanceFieldSmoothing = 1f
+      }
     }
   } catch (e: Exception) {
     Log.err(e)
@@ -83,16 +95,19 @@ object MarkdownStyles {
     lineStroke = 2f
 
     textFont = Markdown.FontEntry(
-      fontModifier = Fonts.def,
+      fontModifier = defDistanced,
+      fontOffsetX = -4f,
+      fontOffsetY = 4f,
       colorModifier = Color.white,
       scaleModifier = 1f
     )
     subFont = Markdown.FontEntry(
-      fontModifier = Fonts.def,
       colorModifier = Color.lightGray,
     )
     strongFont = Markdown.FontEntry(
       fontModifier = strong,
+      fontOffsetX = -4f,
+      fontOffsetY = 4f,
     )
     emFont = Markdown.FontEntry(
       isItalic = true,
@@ -102,7 +117,8 @@ object MarkdownStyles {
         fontModifier = defDistanced,
         colorModifier = if (i == 5) Color.gray else Color.white,
         scaleModifier = if (i < 5) 5f/(i + 1) else 1f,
-        fontOffsetX = -4f*(if (i < 5) 5f/(i + 1) else 1f)
+        fontOffsetX = -4f*(if (i < 5) 5f/(i + 1) else 1f),
+        fontOffsetY = 4f*(if (i < 5) 5f/(i + 1) else 1f),
       )
     }
     quoteBox = Markdown.Box(
@@ -133,6 +149,8 @@ object MarkdownStyles {
 
     codeFont = Markdown.FontEntry(
       fontModifier = mono,
+      fontOffsetX = -4f,
+      fontOffsetY = 4f,
       colorModifier = Color.lightGray,
     )
     codeBox = Markdown.Box(

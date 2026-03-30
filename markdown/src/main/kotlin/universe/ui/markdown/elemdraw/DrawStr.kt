@@ -124,11 +124,12 @@ open class DrawStr internal constructor() : Markdown.MarkdownDraw() {
     val cache = cache!!
     cache.tint(tmp1.set(color).mul(Draw.getColor()))
 
+    val shouldDistanceField = isDistanceField
     val lastSclX = data.scaleX
     val lastSclY = data.scaleY
     data.setScale(scl)
 
-    if (isDistanceField) {
+    if (shouldDistanceField) {
       Draw.shader(distanceFieldShader)
       distanceFieldShader.bind()
       distanceFieldShader.setUniformf("u_smoothing", 0.5f * font.scaleX)
@@ -148,7 +149,7 @@ open class DrawStr internal constructor() : Markdown.MarkdownDraw() {
       cache.setPosition(x + offsetX + fontOffX, y - offsetY + fontOffY)
       cache.draw()
     }
-    if (isDistanceField) Draw.shader()
+    if (shouldDistanceField) Draw.shader()
 
     data.setScale(lastSclX, lastSclY)
   }
