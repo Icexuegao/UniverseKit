@@ -1,12 +1,14 @@
 ## Markdown
 
-此模块提供渲染Markdown文本的UI工具，包含一个核心的类型`Markdown`及其周边的一系列工具，对标准的Markdown格式进行了实现，同时也提供了完备的抽象用于添加或修改自定义行为。
+> [>点击<](README_ZH.md) 跳转至中文文档
 
-### 快速开始
+This module provides UI tools for rendering Markdown text, including a core type `Markdown` and a set of auxiliary tools. It implements standard Markdown syntax while offering comprehensive abstractions for adding or customizing behaviors.
 
-您可以通过如下方式添加对此模块的依赖：
+### Quick Start
 
-Gradle：
+You can add a dependency on this module as follows:
+
+Gradle:
 
 ```groovy
 dependencies {
@@ -14,7 +16,7 @@ dependencies {
 }
 ```
 
-Maven：
+Maven:
 
 ```xml
 <dependency>
@@ -24,7 +26,7 @@ Maven：
 </dependency>
 ```
 
-Markdown模块的核心类型为`universe.ui.markdown.Markdown`，它包含一个主要构造函数：
+The core type of the Markdown module is `universe.ui.markdown.Markdown`, which provides a primary constructor:
 
 ```kotlin
 Markdown(
@@ -34,17 +36,17 @@ Markdown(
 )
 ```
 
-其中各参数含义：
+Parameter meanings:
 
-- `content`：Markdown的原始文本内容，格式请参阅[Markdown官方教程](https://markdown.com.cn/basic-syntax/)。
-- `style`：此Markdown的绘制样式，包括各类文本使用的字体，行间距及块间距等。
-- `provider`：渲染Markdown的工厂，提供解析与渲染的扩展对象及实际构造绘制目标的相关功能，是自定义行为的核心目标。
+- `content`: The raw Markdown text. Refer to the [official Markdown tutorial](https://markdown.com.cn/basic-syntax/) for syntax details.
+- `style`: The rendering style for this Markdown, including fonts, line spacing, block margins, etc.
+- `provider`: The factory for rendering Markdown, providing extension objects for parsing and rendering, as well as the actual construction of draw targets. This is the core point for customizing behavior.
 
-其中`provider`具有一个`BaseProvider()`的默认值，它定义了对常规Markdown规范的默认实现，而自定义Markdown语法或渲染行为也通常是通过继承并重写此类型的函数来实现。
+`provider` has a default value of `BaseProvider()`, which defines the default implementation for standard Markdown specifications. Custom Markdown syntax or rendering behaviors are typically achieved by inheriting and overriding functions of this type.
 
-`style`描述此Markdown的布局与绘制样式，如果您是在**Mindustry mod**环境中使用Markdown，则您可以在`MarkdownStyles`单例中获取Mindustry风格的默认样式。
+`style` describes the layout and drawing style of the Markdown. If you are using Markdown in a **Mindustry mod** environment, you can obtain the default Mindustry style from the `MarkdownStyles` singleton.
 
-以下是一个简单的默认用例：
+Here is a simple default usage example:
 
 ```kotlin
 fun sample(){
@@ -64,38 +66,38 @@ fun sample(){
 }
 ```
 
-此例中使用默认的Markdown实现与Mindustry默认样式，运行`sample()`，您将会看到如下画面：
+This example uses the default Markdown implementation and the Mindustry default style. Running `sample()` will display the following:
 
 ![Hello world](images/hello-world.png)
 
-Markdown中仅有一个属性`wrapContent`，它表示这个Markdown是否依据布局宽度自动换行，默认为真。
+`Markdown` has a single property `wrapContent`. It indicates whether the Markdown should automatically wrap lines based on the layout width. The default is `true`.
 
-需要注意的是，当`wrapContent`为真时，此Markdown的最适宽度（`getPrefWidth()`）会被设为0，此状态下您不应以Markdown内容为参考进行布局。
+Note that when `wrapContent` is `true`, the preferred width (`getPrefWidth()`) of this Markdown is set to `0`. In this state, you should not rely on the Markdown content for layout decisions.
 
-这类似于`Label`，当您将`wrapContent`设为`false`后，Markdown将不会自动换行，并自动计算其所占宽度。
+This is similar to `Label`. When you set `wrapContent` to `false`, the Markdown will not automatically wrap and will instead calculate its own width.
 
-### 支持的语法
+### Supported Syntax
 
-本工具实现了**除内嵌HTML**外的绝大部分Markdown标准规范及部分常用扩展语法，如下：
+This tool implements most of the standard Markdown specifications **except inline HTML**, as well as some commonly used extended syntax, as follows:
 
-#### 多级标题
+#### Headings
 
-由若干`#`号起始的行，`#`数量也代表标题级别。标题还会被记录到章节索引中，您可以通过对Markdown调用其`findChapter`函数来获取某一章节的标题位置。
+Lines starting with one or more `#` characters, where the number of `#` indicates the heading level. Headings are also recorded in the section index; you can call the `findChapter` function on the Markdown to obtain the position of a specific heading.
 
-  ```md
-  # Heading 1
-  ## Heading 2
-  ### Heading 3
-  #### Heading 4
-  ##### Heading 5
-  ###### Heading 6
-  ```
-  
-  ![Headings](images/headings.png)
+```md
+# Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
+##### Heading 5
+###### Heading 6
+```
 
-#### 强调
+![Headings](images/headings.png)
 
-由`*`号或`_`号包围的内嵌文本。多次嵌套只会在强调和增强强调间来回切换。
+#### Emphasis
+
+Inline text surrounded by `*` or `_`. Nested emphasis toggles between emphasis and strong emphasis.
 
 ```md
 *Emphasize*
@@ -107,9 +109,9 @@ ___Strong Emphasize___
 
 ![Emphasis](images/emphasis.png)
 
-#### 下划线
+#### Underline
 
-使用一对两个加号`++`包围的文本，通常也被用于强调。
+Text surrounded by a pair of `++`. Often used for emphasis as well.
 
 ```md
 ++Under line++
@@ -117,11 +119,11 @@ ___Strong Emphasize___
 
 ![Under Line](images/under-line.png)
 
-_此语法为扩展的Markdown方言，并非Markdown的标准语法特性。_
+*This syntax is an extended Markdown dialect, not part of the standard Markdown specification.*
 
-#### 删除线
+#### Strikethrough
 
-使用一对两个波浪号`~~`包围的文本，在文本正中划线表示删除。
+Text surrounded by a pair of `~~`. Draws a line through the middle of the text to indicate deletion.
 
 ```md
 ~~Strikethrough~~
@@ -129,9 +131,9 @@ _此语法为扩展的Markdown方言，并非Markdown的标准语法特性。_
 
 ![Strikethrough](images/strikethrough.png)
 
-#### 链接
+#### Links
 
-一个指向某一URL的超链接文本，结构形如`[Link](URL)`的文本块。当链接被点击时，Markdown会发出一个`UrlClickedEvent`事件，携带被点击的链接在UI层次结构中传递。
+A hyperlink pointing to a URL, structured as `[Link](URL)`. When a link is clicked, the Markdown emits a `UrlClickedEvent` carrying the clicked URL, which propagates through the UI hierarchy.
 
 ```md
 [A Link](https://github.com/EB-wilson/UniverseKit)
@@ -139,12 +141,13 @@ _此语法为扩展的Markdown方言，并非Markdown的标准语法特性。_
 
 ![Link](images/link.png)
 
-同时Markdown也实现了引用链接定义，您可以通过如下形式定义可引用链接：
+The Markdown also implements reference link definitions. You can define a reference link as follows:
+
 ```md
 [RefName]: url
 ```
 
-并以`[Link][ReferenceURL]`形式的引用到定义的链接，引用链接可以定义在全文的任意位置，通常它们都不参与渲染。
+And then reference it as `[Link][ReferenceURL]`. Reference links can be placed anywhere in the document and are typically not rendered.
 
 ```md
 [A Reference Link][RefLinkDef]
@@ -154,27 +157,27 @@ _此语法为扩展的Markdown方言，并非Markdown的标准语法特性。_
 
 ![Reference Link](images/ref-link.png)
 
-#### 遮幕
+#### Curtain
 
-由一对`$`符号包围的文本块，渲染时会使用黑色的前景遮盖这段文本块，仅在将光标移动到遮幕上（或者在触屏上按住）时文本内容才会显现。
+Text blocks surrounded by a pair of `$` symbols. The text is covered by a black foreground and becomes visible only when the cursor hovers over it (or when tapped and held on touchscreens).
 
 ```md
 $This is a Curtain$
 ```
 
-未悬停时：
+When not hovered:
 
 ![Curtain Close](images/curtain-close.png)
 
-鼠标悬停时：
+When hovered:
 
 ![Curtain Open](images/curtain-open.png)
 
-_此语法为扩展的Markdown方言，并非Markdown的标准语法特性。_
+*This syntax is an extended Markdown dialect, not part of the standard Markdown specification.*
 
-#### 内联代码
+#### Inline Code
 
-由``` ` ```号包围的内嵌文本，使用等宽字体。
+Inline text surrounded by `` ` ``. Uses a monospaced font.
 
 ```md
 `Code`
@@ -182,9 +185,9 @@ _此语法为扩展的Markdown方言，并非Markdown的标准语法特性。_
 
 ![Inline Code](images/inline-code.png)
 
-#### 引用块 
- 
-由`>`符号开头的多个连续行组成的块文本，其内容会被包围在一个背景框体内。
+#### Blockquotes
+
+Block text consisting of multiple consecutive lines starting with `>`. The content is enclosed in a background frame.
 
 ```md
 > Quote Block Line 1  
@@ -194,9 +197,9 @@ _此语法为扩展的Markdown方言，并非Markdown的标准语法特性。_
 
 ![Quote Block](images/quote-block.png)
 
-#### 分割线
+#### Thematic Break
 
-由至少三个`-`或`*`号构成的单个行，它用于分隔开文档的各个部分，更多的符号没有任何特殊效果。
+A single line consisting of at least three `-` or `*` characters. Used to separate sections of the document. Additional symbols have no special effect.
 
 ```md
 Part 1
@@ -208,11 +211,11 @@ Part 2
 
 ![Thematic Break](images/thematic-break.png)
 
-#### 列表
+#### Lists
 
-由一系列缩进一致的`-`或数字序号开头的多个行，缩进量可表达列表等级。
+Multiple lines starting with `-` or a number followed by a period, all with consistent indentation. Indentation level indicates nesting.
 
-无序表列：
+Unordered list:
 ```md
 - List item 1
 - List item 2
@@ -222,9 +225,9 @@ Part 2
 - List item 4
 ```
 
-![Bullet List](images/bullet-list.png)  
+![Bullet List](images/bullet-list.png)
 
-有序列表：
+Ordered list:
 ```md
 1. Item 1
 2. Item 2
@@ -237,9 +240,9 @@ Part 2
 
 ![Ordered List](images/ordered-list.png)
 
-#### 围栏代码块
+#### Fenced Code Blocks
 
-由一对` ``` `包围的一块多行文本，首个` ``` `后可跟随一个附加信息用于描述代码所用语言等。
+A multi-line text block surrounded by a pair of ` ``` `. After the opening ` ``` `, an info string can be added to describe the language, etc.
 
 <pre><code>Fenced Code Block:
 
@@ -251,9 +254,9 @@ fun sample(){
 
 ![Fenced Code](images/fenced-code.png)
 
-#### 缩进代码块
+#### Indented Code Blocks
 
-由至少4个空格缩进的多个并列行视为一个缩进代码块，除不能标注附加信息外，它与围栏代码块作用类似。
+Multiple consecutive lines indented by at least four spaces are treated as an indented code block. It functions similarly to a fenced code block, except that it cannot have an info string.
 
 ```md
 Indent Code block:
@@ -265,27 +268,27 @@ Indent Code block:
 
 ![Indent Code](images/indent-code.png)
 
-#### 图片
+#### Images
 
-引用自URL路径的图像资源，由`![Title](url)`形式进行定义。
+Image resources referenced from a URL path, defined as `![Title](url)`.
 
-URL路径包含若干默认定义，目前支持多种URL协议：
+URL paths support several predefined protocols:
 
-- `http`/`https`：超文本传输协议，用于从web地址获取图像资源
+- `http`/`https`: Hypertext Transfer Protocol, fetches image resources from a web address.
 
-  例如：`https://github.com/EB-wilson/Helium/blob/master/icon.png
-- `file`：本地文件路径，从本机的文件系统中定位文件资源，注意，这使用的是客户端上的文件，并不会将编译时设备上的文件打包，较少使用。
+  Example: `https://github.com/EB-wilson/Helium/blob/master/icon.png`
+- `file`: Local file path, locates file resources from the local filesystem. Note that this uses files on the client and does not package files from the compile-time device; rarely used.
 
-  例如：`file:///C:/User/UserName/images/sample.png`
-- `resource`：jar资源路径，从当前程序的jar包中索引资源文件，以jar包为根目录。
+  Example: `file:///C:/User/UserName/images/sample.png`
+- `resource`: JAR resource path, indexes resource files from the current program's JAR, with the JAR as the root.
 
-  例如：`resource://sprites/items/sample.png`
-- `atlas`：Atlas索引，从游戏已加载的精灵序列中搜索具有给定名称的图像资源，直接提供图像的精灵名称。
+  Example: `resource://sprites/items/sample.png`
+- `atlas`: Atlas index, searches for an image resource with a given name among the game's loaded sprite atlas; directly provide the sprite name.
 
-  例如：`atlas:item-copper`
-- `data`：此URL直接以文本方式编码资源内容，对于图像应为Base64编码方式。
+  Example: `atlas:item-copper`
+- `data`: The URL encodes the resource content directly as text; for images, it should be Base64-encoded.
 
-  例如：`data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJcAAADlCAYAAABedWWzAAA...`
+  Example: `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJcAAADlCAYAAABedWWzAAA...`
 
 ```md
 ![Web Image](https://avatars.githubusercontent.com/u/77141581)
@@ -297,9 +300,9 @@ URL路径包含若干默认定义，目前支持多种URL协议：
 
 ![Images](images/images.png)
 
-此外，您还可以为图像设置其长/宽以及缩放方式，通过在图像块后方跟随一段由`{}`包围的块体，并在其中以`key=value`的形式提供`width`，`height`以及`scaling`以使图像按预期的大小进行缩放。
+Additionally, you can set the width/height and scaling method for an image by appending a block surrounded by `{}` after the image definition, using `key=value` pairs to provide `width`, `height`, and `scaling` so that the image is scaled to the desired size.
 
-其中，`scaling`定义与Image元素使用的`Scaling`枚举相同，您应当使用此枚举中提供的缩放方式。
+The `scaling` definition is the same as the `Scaling` enum used by the `Image` element. You should use the scaling methods provided by this enum.
 
 ```md
 ![Web Image](https://avatars.githubusercontent.com/u/77141581){width=120 scaling=fillX}
