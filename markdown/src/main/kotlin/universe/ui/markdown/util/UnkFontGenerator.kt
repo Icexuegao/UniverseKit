@@ -324,7 +324,7 @@ open class UnkFontGenerator @JvmOverloads constructor(fontFile: Fi, faceIndex: I
     for (capChar in data.capChars) {
       if (!loadChar(capChar.code, flags)) continue
       data.capHeight =
-        (FreeType.toInt(face.glyph.metrics.height) + abs(parameter.shadowOffsetY)).toFloat()
+        (FreeType.toInt(face.glyph.metrics.height)).toFloat()
       break
     }
     if (!bitmapped && data.capHeight == 1f) throw ArcRuntimeException("No cap character found in font")
@@ -526,49 +526,7 @@ open class UnkFontGenerator @JvmOverloads constructor(fontFile: Fi, faceIndex: I
         mainGlyph = borderGlyph
       }
 
-      if (parameter.shadowOffsetX != 0 || parameter.shadowOffsetY != 0) {
-        val mainW = mainPixmap.width
-        val mainH = mainPixmap.height
-        val shadowOffsetX = max(parameter.shadowOffsetX, 0)
-        val shadowOffsetY = max(parameter.shadowOffsetY, 0)
-        val shadowW = mainW + abs(parameter.shadowOffsetX)
-        val shadowH = mainH + abs(parameter.shadowOffsetY)
-        val shadowPixmap = Pixmap(shadowW, shadowH)
-
-        val shadowColor = parameter.shadowColor
-        val a = shadowColor.a
-        if (a != 0f) {
-          val r = (shadowColor.r*255).toInt().toByte()
-          val g = (shadowColor.g*255).toInt().toByte()
-          val b = (shadowColor.b*255).toInt().toByte()
-          val mainPixels = mainPixmap.pixels
-          val shadowPixels = shadowPixmap.pixels
-          for (y in 0..<mainH) {
-            val shadowRow = shadowW*(y + shadowOffsetY) + shadowOffsetX
-            for (x in 0..<mainW) {
-              val mainPixel = (mainW*y + x)*4
-              val mainA = mainPixels.get(mainPixel + 3)
-              if (mainA.toInt() == 0) continue
-              val shadowPixel = (shadowRow + x)*4
-              shadowPixels.put(shadowPixel, r)
-              shadowPixels.put(shadowPixel + 1, g)
-              shadowPixels.put(shadowPixel + 2, b)
-              shadowPixels.put(shadowPixel + 3, ((mainA.toInt() and 0xff)*a).toInt().toByte())
-            }
-          }
-        }
-
-        // Draw main glyph (with any border) on top of shadow.
-        var i = 0
-        val n = parameter.renderCount
-        while (i < n) {
-          shadowPixmap.draw(mainPixmap, max(-parameter.shadowOffsetX, 0), max(-parameter.shadowOffsetY, 0), true)
-          i++
-        }
-        mainPixmap.dispose()
-        mainPixmap = shadowPixmap
-      }
-      else if (parameter.borderWidth == 0f) {
+      if (parameter.borderWidth == 0f) {
         // No shadow and no border, draw glyph additional times.
         var i = 0
         val n = parameter.renderCount - 1
@@ -863,21 +821,11 @@ open class UnkFontGenerator @JvmOverloads constructor(fontFile: Fi, faceIndex: I
     /** Values < 1 increase the border size.  */
     var borderGamma: Float = 1.8f
 
-    /** Offset of text shadow on X axis in pixels, 0 to disable  */
-    var shadowOffsetX: Int = 0
-
-    /** Offset of text shadow on Y axis in pixels, 0 to disable  */
-    var shadowOffsetY: Int = 0
 
     var distanceFieldColor: Color = Color.white
     var distanceFieldDownscale = 1
     var distanceFieldSpread = 1f
 
-    /**
-     * Shadow color; only used if shadowOffset > 0. If alpha component is 0, no shadow is drawn but characters are still offset
-     * by shadowOffset.
-     */
-    var shadowColor: Color = Color(0f, 0f, 0f, 0.75f)
 
     /** Pixels to add to glyph spacing when text is rendered. Can be negative.  */
     var spaceX: Int = 0

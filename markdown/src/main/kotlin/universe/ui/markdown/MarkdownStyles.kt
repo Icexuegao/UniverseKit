@@ -1,18 +1,22 @@
 package universe.ui.markdown
 
 import arc.Core
+import arc.Events
 import arc.Files
 import arc.files.Fi
 import arc.graphics.Color
+import arc.graphics.Texture
 import arc.graphics.g2d.DistanceFieldFont
 import arc.graphics.g2d.Draw
 import arc.graphics.g2d.Fill
 import arc.graphics.g2d.Lines
+import arc.math.Mathf
 import arc.scene.style.BaseDrawable
 import arc.scene.style.TextureRegionDrawable
 import arc.scene.ui.layout.Scl
 import arc.util.Log
 import arc.util.Tmp
+import mindustry.game.EventType
 import mindustry.gen.Tex
 import mindustry.graphics.Pal
 import mindustry.ui.Fonts
@@ -26,9 +30,12 @@ object MarkdownStyles {
     .generateFont(UnkFontGenerator.UnkFontParameter().apply {
       size = Scl.scl(19f).toInt()
       borderWidth = Scl.scl(0.3f)
-      shadowOffsetY = 2
       incremental = true
       borderColor = color
+
+      genMipMaps = true
+      minFilter = Texture.TextureFilter.linear
+      magFilter = Texture.TextureFilter.linear
 
       distanceFieldDownscale = 1
       distanceFieldSpread = 4f
@@ -42,9 +49,11 @@ object MarkdownStyles {
   private val defDistanced = UnkFontGenerator(Core.files.internal("fonts/font.woff"))
     .generateFont(UnkFontGenerator.UnkFontParameter().apply {
       size = Scl.scl(19f).toInt()
-      shadowColor = Color.darkGray
-      shadowOffsetY = 2
       incremental = true
+
+      genMipMaps = true
+      minFilter = Texture.TextureFilter.linear
+      magFilter = Texture.TextureFilter.linear
 
       distanceFieldDownscale = 1
       distanceFieldSpread = 4f
@@ -65,9 +74,12 @@ object MarkdownStyles {
       gen.generateFont( UnkFontGenerator.UnkFontParameter().apply{
         size = Scl.scl(19f).toInt()
         borderWidth = Scl.scl(0.3f)
-        shadowOffsetY = 2
         incremental = true
         borderColor = color
+
+        genMipMaps = true
+        minFilter = Texture.TextureFilter.linear
+        magFilter = Texture.TextureFilter.linear
 
         distanceFieldDownscale = 1
         distanceFieldSpread = 4f
