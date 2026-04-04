@@ -18,6 +18,7 @@
             <option value="$PROJECT_DIR$/platform/expects" />
             <option value="$PROJECT_DIR$/platform/stub" />
             <option value="$PROJECT_DIR$/reflection" />
+            <option value="$PROJECT_DIR$/reflection/reflection-java" />
           </set>
         </option>
       </GradleProjectSettings>

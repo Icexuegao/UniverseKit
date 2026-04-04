@@ -5,11 +5,31 @@ import universe.actuals.AndroidProvider
 import universe.actuals.Desktop9Provider
 import universe.actuals.DesktopProvider
 import universe.expects.PlatformProvider
+import universe.expects.ReflectionHandle
+import kotlin.reflect.KProperty
+
+private class MutableLazy<T>(
+  private val initializer: () -> T,
+){
+  var value: T? = null
+
+  operator fun getValue(thisRef: Any?, property: KProperty<*>): T{
+    if (value == null){
+      value = initializer()
+    }
+
+    return value!!
+  }
+
+  operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T){
+    this.value = value
+  }
+}
 
 object UniverseActual {
   private var platformProvider = getPlatform()
 
-  var reflection = platformProvider.getReflectionHandle()
+  @JvmStatic var reflection: ReflectionHandle by MutableLazy{ platformProvider.getReflectionHandle() }
     private set
 
   fun customPlatformProvider(platform: PlatformProvider) {

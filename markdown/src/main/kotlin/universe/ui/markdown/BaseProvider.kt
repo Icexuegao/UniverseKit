@@ -14,7 +14,11 @@ import arc.scene.ui.layout.Table
 import arc.util.Align
 import arc.util.Log
 import arc.util.Scaling
+import mindustry.gen.Building
+import mindustry.gen.Bullet
 import mindustry.gen.Tex
+import mindustry.gen.Unit
+import mindustry.gen.UnitEntity
 import org.commonmark.ext.gfm.strikethrough.Strikethrough
 import org.commonmark.ext.gfm.tables.TableBlock
 import org.commonmark.ext.gfm.tables.TableBody

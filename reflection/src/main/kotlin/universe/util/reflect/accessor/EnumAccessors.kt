@@ -1,7 +1,7 @@
 package universe.util.reflect.accessor
 
 import universe.UniverseActual
-import universe.util.reflect.Reflection.accessInt
+import universe.util.reflect.accessInt
 import kotlin.enums.EnumEntries
 import kotlin.reflect.KClass
 

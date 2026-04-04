@@ -1,6 +1,5 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
+  java
   kotlin("jvm")
   `maven-publish`
 }
@@ -23,26 +22,24 @@ publishing {
 repositories {
   mavenLocal()
   mavenCentral()
+
+  maven ("https://maven.xpdustry.com/mindustry")
+  maven { url = uri("https://raw.githubusercontent.com/Zelaux/MindustryRepo/master/repository") }
+  maven { url = uri("https://www.jitpack.io") }
 }
 
 dependencies {
-  implementation(kotlin("stdlib-jdk8"))
-  implementation(kotlin("reflect"))
-
   implementation(project(":platform"))
   implementation(project(":platform:expects"))
+  implementation(project(":reflection"))
+
+  implementation(kotlin("stdlib-jdk8"))
+
+  testImplementation(project(":reflection"))
 }
 
 java {
   withSourcesJar()
   sourceCompatibility = JavaVersion.VERSION_1_8
   targetCompatibility = JavaVersion.VERSION_1_8
-}
-
-kotlin {
-  jvmToolchain(21)
-
-  compilerOptions {
-    jvmTarget.set(JvmTarget.JVM_1_8)
-  }
 }
