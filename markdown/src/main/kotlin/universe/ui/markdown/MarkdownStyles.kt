@@ -30,7 +30,7 @@ object MarkdownStyles {
   private val strong = FreeTypeFontGenerator(Core.files.internal("fonts/font.woff"))
     .generateFont(FreeTypeFontGenerator.FreeTypeFontParameter().apply {
       size = Scl.scl(18f).toInt()
-      borderWidth = Scl.scl(1f)
+      borderWidth = Scl.scl(0.5f)
       incremental = true
       borderColor = color
     })
