@@ -60,7 +60,7 @@ open class DrawStr internal constructor() : Markdown.MarkdownDraw() {
   override fun setup(scope: RendererContext.Scope) {
     val data = font.getData()
     val lastScl = data.scaleX
-    data.setScale(scl)
+    data.setScale(scl*lastScl)
     isDistanceField = font is DistanceFieldFont
     cache = font.newFontCache()
     layout = cache!!.setText(

@@ -1,3 +1,5 @@
+@file:Suppress("PROPERTY_HIDES_JAVA_FIELD")
+
 package universe.ui.markdown.util
 
 import arc.Core
@@ -148,9 +150,12 @@ open class UnkFontGenerator @JvmOverloads constructor(fontFile: Fi, faceIndex: I
       parameter.genMipMaps
     )
     if (data.regions!!.isEmpty) throw ArcRuntimeException("Unable to create a font with no texture regions.")
+
+    data.padLeft += parameter.distanceFieldSpread
     val font = if (parameter.distanceFieldSpread > 0) DistanceFieldFont(data, data.regions, true)
       else Font(data, data.regions, true)
     font.setOwnsTexture(parameter.packer == null)
+
     return font
   }
 
@@ -547,11 +552,18 @@ open class UnkFontGenerator @JvmOverloads constructor(fontFile: Fi, faceIndex: I
       }
 
       if (parameter.distanceFieldSpread > 0){
+        val spread = parameter.distanceFieldSpread
+        val spreadPixmap = Pixmap(
+          mainPixmap.width + spread*2,
+          mainPixmap.height + spread*2
+        )
+        spreadPixmap.draw(mainPixmap, spread, spread, true)
+
         val distPixmap = generateDistanceField(
           parameter.distanceFieldDownscale,
           parameter.distanceFieldSpread,
           parameter.distanceFieldColor,
-          mainPixmap
+          spreadPixmap,
         )
         mainPixmap.dispose()
         mainPixmap = distPixmap
@@ -561,9 +573,9 @@ open class UnkFontGenerator @JvmOverloads constructor(fontFile: Fi, faceIndex: I
     val metrics = slot.metrics
     val glyph = Font.Glyph()
     glyph.id = c.code
-    glyph.width = mainPixmap.width
-    glyph.height = mainPixmap.height
-    glyph.xoffset = mainGlyph.getLeft()
+    glyph.width = mainPixmap.width //- parameter.distanceFieldSpread*2
+    glyph.height = mainPixmap.height //- parameter.distanceFieldSpread*2
+    glyph.xoffset = mainGlyph.getLeft() //+ parameter.distanceFieldSpread
     if (parameter.flip) glyph.yoffset = -mainGlyph.getTop() + baseLine.toInt()
     else glyph.yoffset = -(glyph.height - mainGlyph.getTop()) - baseLine.toInt()
     glyph.xadvance = FreeType.toInt(metrics.horiAdvance) + parameter.borderWidth.toInt() + parameter.spaceX
@@ -607,7 +619,7 @@ open class UnkFontGenerator @JvmOverloads constructor(fontFile: Fi, faceIndex: I
     return dx*dx + dy*dy
   }
 
-  fun generateDistanceField(downscale: Int, spread: Float, color: Color, inImage: Pixmap): Pixmap {
+  fun generateDistanceField(downscale: Int, spread: Int, color: Color, inImage: Pixmap): Pixmap {
     val inWidth = inImage.width
     val inHeight = inImage.height
     val outWidth = inWidth/downscale
@@ -639,7 +651,7 @@ open class UnkFontGenerator @JvmOverloads constructor(fontFile: Fi, faceIndex: I
     return Color.ai(rgba) > 32
   }
 
-  private fun distanceToRGB(spread: Float, color: Int, signedDistance: Float): Int {
+  private fun distanceToRGB(spread: Int, color: Int, signedDistance: Float): Int {
     var alpha = 0.5f + 0.5f*(signedDistance/spread)
     val a = Color.ai(color)/255f
     alpha = Mathf.clamp(alpha)*a
@@ -647,16 +659,15 @@ open class UnkFontGenerator @JvmOverloads constructor(fontFile: Fi, faceIndex: I
     return alphaByte or (color and 0xffffff00.toInt())
   }
 
-  private fun findSignedDistance(spread: Float, centerX: Int, centerY: Int, bitmap: Array<BooleanArray>): Float {
+  private fun findSignedDistance(spread: Int, centerX: Int, centerY: Int, bitmap: Array<BooleanArray>): Float {
     val width = bitmap[0].size
     val height = bitmap.size
     val base = bitmap[centerY][centerX]
-    val delta = ceil(spread).toInt()
-    val startX = max(0, centerX - delta)
-    val endX = min(width - 1, centerX + delta)
-    val startY = max(0, centerY - delta)
-    val endY = min(height - 1, centerY + delta)
-    var closestSquareDist = delta*delta
+    val startX = max(0, centerX - spread)
+    val endX = min(width - 1, centerX + spread)
+    val startY = max(0, centerY - spread)
+    val endY = min(height - 1, centerY + spread)
+    var closestSquareDist = spread*spread
 
     for (y in startY..endY) {
       for (x in startX..endX) {
@@ -670,7 +681,7 @@ open class UnkFontGenerator @JvmOverloads constructor(fontFile: Fi, faceIndex: I
     }
 
     val closestDist = sqrt(closestSquareDist.toDouble()).toFloat()
-    return (if (base) 1 else -1).toFloat()*min(closestDist, spread)
+    return (if (base) 1 else -1).toFloat()*min(closestDist, spread.toFloat())
   }
 
   /** Cleans up all resources of the generator. Call this if you no longer use the generator.  */
@@ -727,6 +738,7 @@ open class UnkFontGenerator @JvmOverloads constructor(fontFile: Fi, faceIndex: I
         if (glyph == null) return missingGlyph
 
         setGlyphRegion(glyph, regions!!.get(glyph.page))
+
         setGlyph(ch.code, glyph)
         glyphs!!.add(glyph)
         dirty = true
@@ -824,7 +836,7 @@ open class UnkFontGenerator @JvmOverloads constructor(fontFile: Fi, faceIndex: I
 
     var distanceFieldColor: Color = Color.white
     var distanceFieldDownscale = 1
-    var distanceFieldSpread = 1f
+    var distanceFieldSpread = 1
 
 
     /** Pixels to add to glyph spacing when text is rendered. Can be negative.  */

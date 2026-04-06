@@ -4,6 +4,7 @@ import arc.Core
 import arc.Events
 import arc.Files
 import arc.files.Fi
+import arc.freetype.FreeTypeFontGenerator
 import arc.graphics.Color
 import arc.graphics.Texture
 import arc.graphics.g2d.DistanceFieldFont
@@ -26,29 +27,16 @@ import universe.ui.markdown.util.UnkFontGenerator
 import java.io.InputStream
 
 object MarkdownStyles {
-  private val strong = UnkFontGenerator(Core.files.internal("fonts/font.woff"))
-    .generateFont(UnkFontGenerator.UnkFontParameter().apply {
-      size = Scl.scl(19f).toInt()
-      borderWidth = Scl.scl(0.3f)
+  private val strong = FreeTypeFontGenerator(Core.files.internal("fonts/font.woff"))
+    .generateFont(FreeTypeFontGenerator.FreeTypeFontParameter().apply {
+      size = Scl.scl(18f).toInt()
+      borderWidth = Scl.scl(1f)
       incremental = true
       borderColor = color
-
-      genMipMaps = true
-      minFilter = Texture.TextureFilter.linear
-      magFilter = Texture.TextureFilter.linear
-
-      distanceFieldDownscale = 1
-      distanceFieldSpread = 4f
-      padLeft = 4
-      padRight = 4
-      padTop = 4
-      padBottom = 4
-    }).also {
-      (it as DistanceFieldFont).distanceFieldSmoothing = 1f
-    }
+    })
   private val defDistanced = UnkFontGenerator(Core.files.internal("fonts/font.woff"))
     .generateFont(UnkFontGenerator.UnkFontParameter().apply {
-      size = Scl.scl(19f).toInt()
+      size = Scl.scl(36f).toInt()
       incremental = true
 
       genMipMaps = true
@@ -56,13 +44,10 @@ object MarkdownStyles {
       magFilter = Texture.TextureFilter.linear
 
       distanceFieldDownscale = 1
-      distanceFieldSpread = 4f
-      padLeft = 4
-      padRight = 4
-      padTop = 4
-      padBottom = 4
-    }).also {
-      (it as DistanceFieldFont).distanceFieldSmoothing = 1f
+      distanceFieldSpread = 6
+    }).also { f ->
+      f.data.setScale(0.5f)
+      (f as DistanceFieldFont).distanceFieldSmoothing = 1f
     }
   private val mono = try {
     MarkdownStyles::class.java.getClassLoader().getResource("fonts/JetBrainsMono.ttf").let { url ->
@@ -70,26 +55,11 @@ object MarkdownStyles {
         override fun read(): InputStream = url!!.openStream()
       }
 
-      val gen = UnkFontGenerator(fi)
-      gen.generateFont( UnkFontGenerator.UnkFontParameter().apply{
+      val gen = FreeTypeFontGenerator(fi)
+      gen.generateFont( FreeTypeFontGenerator.FreeTypeFontParameter().apply{
         size = Scl.scl(19f).toInt()
-        borderWidth = Scl.scl(0.3f)
         incremental = true
-        borderColor = color
-
-        genMipMaps = true
-        minFilter = Texture.TextureFilter.linear
-        magFilter = Texture.TextureFilter.linear
-
-        distanceFieldDownscale = 1
-        distanceFieldSpread = 4f
-        padLeft = 4
-        padRight = 4
-        padTop = 4
-        padBottom = 4
-      }).also {
-        (it as DistanceFieldFont).distanceFieldSmoothing = 1f
-      }
+      })
     }
   } catch (e: Exception) {
     Log.err(e)
@@ -107,9 +77,7 @@ object MarkdownStyles {
     lineStroke = 2f
 
     textFont = Markdown.FontEntry(
-      fontModifier = defDistanced,
-      fontOffsetX = -4f,
-      fontOffsetY = 4f,
+      fontModifier = Fonts.def,
       colorModifier = Color.white,
       scaleModifier = 1f
     )
@@ -118,8 +86,6 @@ object MarkdownStyles {
     )
     strongFont = Markdown.FontEntry(
       fontModifier = strong,
-      fontOffsetX = -4f,
-      fontOffsetY = 4f,
     )
     emFont = Markdown.FontEntry(
       isItalic = true,
@@ -129,8 +95,6 @@ object MarkdownStyles {
         fontModifier = defDistanced,
         colorModifier = if (i == 5) Color.gray else Color.white,
         scaleModifier = if (i < 5) 5f/(i + 1) else 1f,
-        fontOffsetX = -4f*(if (i < 5) 5f/(i + 1) else 1f),
-        fontOffsetY = 4f*(if (i < 5) 5f/(i + 1) else 1f),
       )
     }
     quoteBox = Markdown.Box(
@@ -190,7 +154,7 @@ object MarkdownStyles {
       colorModifier = Color.white,
     )
     listItemBox = Markdown.Box(
-        paddingLeft = 16f
+      paddingLeft = 16f
     )
     listItemHeadBox = Markdown.Box(
       paddingLeft = 16f,
@@ -260,7 +224,6 @@ object MarkdownStyles {
     var num = n
     val result = StringBuilder()
 
-    // 贪心匹配
     for (i in values.indices) {
       while (num >= values[i]) {
         result.append(romeSymbols[i])

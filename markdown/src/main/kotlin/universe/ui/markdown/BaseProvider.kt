@@ -315,7 +315,6 @@ open class BaseProvider: MarkdownProvider, CurtainProvider, InsProvider, Striket
         heightModifier = height,
       ))
     }?: draw(DrawImg.get(drawable))
-    row(Scl.scl(mdStyle.paragraphPadding))
   }
 
   override fun RendererContext.add(node: Emphasis) {
