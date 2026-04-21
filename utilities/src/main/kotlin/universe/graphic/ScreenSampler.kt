@@ -3,18 +3,21 @@ package universe.graphic
 import arc.Core
 import arc.Events
 import arc.graphics.Color
+import arc.graphics.GL20
 import arc.graphics.GL30
 import arc.graphics.Gl
 import arc.graphics.g2d.Draw
 import arc.graphics.gl.FrameBuffer
 import arc.graphics.gl.GLFrameBuffer
 import arc.graphics.gl.Shader
+import arc.util.Log
 import mindustry.game.EventType
+import java.nio.IntBuffer
 
 object ScreenSampler {
   private val currentBoundBuffer = GLFrameBuffer::class.java.getDeclaredField("currentBoundFramebuffer")
     .also { it.isAccessible = true }
-  private val swapBuffer: FrameBuffer = FrameBuffer()
+  private val screenSwapBuffer: FrameBuffer = FrameBuffer()
   private val baseScreen: Shader = Shader(
     """
     attribute vec4 a_position;
@@ -40,9 +43,9 @@ object ScreenSampler {
   )
 
   init {
-    swapBuffer.resize(Core.graphics.width, Core.graphics.height)
+    screenSwapBuffer.resize(Core.graphics.width, Core.graphics.height)
     Events.on(EventType.ResizeEvent::class.java) { event ->
-      swapBuffer.resize(Core.graphics.width, Core.graphics.height)
+      screenSwapBuffer.resize(Core.graphics.width, Core.graphics.height)
     }
   }
 
@@ -50,65 +53,62 @@ object ScreenSampler {
   fun toBuffer(target: FrameBuffer) {
     val buffer = currentBoundBuffer.get(null) as? GLFrameBuffer<*>
 
-    return buffer?.run {
-      if (buffer.width == target.width && buffer.height == target.height) {
-        buffer.begin()
-        target.texture.bind()
-        Gl.copyTexSubImage2D(
-          Gl.texture2d,
-          0,
-          0, 0,
-          0, 0,
-          target.width, target.height,
-        )
-        Gl.bindTexture(Gl.texture2d, 0)
-        buffer.end()
-      }
-      else {
-        blitBuffer(buffer, target)
-      }
+    buffer?.run {
+      blitBuffer(buffer, target)
     }?: run {
-      if (swapBuffer.width == target.width && swapBuffer.height == target.height) {
+      if (screenSwapBuffer.width == target.width && screenSwapBuffer.height == target.height) {
         Draw.flush()
-        target.texture.bind()
-        Gl.copyTexSubImage2D(
-          Gl.texture2d,
-          0,
-          0, 0,
-          0, 0,
-          target.width, target.height,
-        )
-        Gl.bindTexture(Gl.texture2d, 0)
+
+        copyPixels(target)
       }
       else {
         Draw.flush()
-        swapBuffer.texture.bind()
-        Gl.copyTexSubImage2D(
-          Gl.texture2d,
-          0,
-          0, 0,
-          0, 0,
-          swapBuffer.width, swapBuffer.height,
-        )
-        Gl.bindTexture(Gl.texture2d, 0)
 
-        blitBuffer(swapBuffer, target)
+        copyPixels(screenSwapBuffer)
+
+        blitBuffer(screenSwapBuffer, target)
       }
+    }
+  }
+
+  private fun copyPixels(target: GLFrameBuffer<*>) {
+    Core.gl30?.run {
+      Gl.bindFramebuffer(GL30.GL_READ_FRAMEBUFFER, 0)
+      Gl.bindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, target.framebufferHandle)
+      glReadBuffer(Gl.back)
+      glBlitFramebuffer(
+        0, 0, Core.graphics.width, Core.graphics.height,
+        0, 0, target.width, target.height,
+        Gl.colorBufferBit, Gl.nearest
+      )
+      Gl.bindFramebuffer(GL30.GL_READ_FRAMEBUFFER, 0)
+      Gl.bindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, 0)
+    } ?:
+    Core.gl20?.run {
+      target.texture.bind()
+      Gl.copyTexImage2D(
+        Gl.texture2d, 0,
+        Gl.rgba, 0, 0,
+        target.texture.width, target.texture.height,
+        0
+      )
+      Gl.bindTexture(Gl.texture2d, 0)
     }
   }
 
   private fun blitBuffer(source: GLFrameBuffer<*>, target: GLFrameBuffer<*>) {
     Core.gl30?.run {
-      glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, source.framebufferHandle)
-      glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, target.framebufferHandle)
+      Gl.bindFramebuffer(GL30.GL_READ_FRAMEBUFFER, source.framebufferHandle)
+      Gl.bindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, target.framebufferHandle)
       glBlitFramebuffer(
         0, 0, source.width, source.height,
         0, 0, target.width, target.height,
         Gl.colorBufferBit, Gl.nearest
       )
-      glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, 0)
-      glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, 0)
-    } ?: Core.gl20.run {
+      Gl.bindFramebuffer(GL30.GL_READ_FRAMEBUFFER, 0)
+      Gl.bindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, 0)
+    } ?:
+    Core.gl20.run {
       target.begin(Color.clear)
       source.texture.bind(0)
       Draw.blit(baseScreen)
