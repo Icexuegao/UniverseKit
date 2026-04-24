@@ -125,8 +125,6 @@ object MarkdownStyles {
 
     codeFont = Markdown.FontEntry(
       fontModifier = mono,
-      fontOffsetX = -4f,
-      fontOffsetY = 4f,
       colorModifier = Color.lightGray,
     )
     codeBox = Markdown.Box(

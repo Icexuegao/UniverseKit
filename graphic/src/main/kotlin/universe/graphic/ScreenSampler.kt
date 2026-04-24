@@ -3,16 +3,13 @@ package universe.graphic
 import arc.Core
 import arc.Events
 import arc.graphics.Color
-import arc.graphics.GL20
 import arc.graphics.GL30
 import arc.graphics.Gl
 import arc.graphics.g2d.Draw
 import arc.graphics.gl.FrameBuffer
 import arc.graphics.gl.GLFrameBuffer
 import arc.graphics.gl.Shader
-import arc.util.Log
 import mindustry.game.EventType
-import java.nio.IntBuffer
 
 object ScreenSampler {
   private val currentBoundBuffer = GLFrameBuffer::class.java.getDeclaredField("currentBoundFramebuffer")

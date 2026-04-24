@@ -22,6 +22,7 @@ pluginManagement {
 include("markdown")
 include("reflection")
 include("reflection:reflection-java")
+include("graphic")
 include("utilities")
 include("aspects")
 include("platform")

@@ -229,8 +229,6 @@ open class Markdown : WidgetGroup {
 
   data class FontEntry(
     val fontModifier: Font? = null,
-    val fontOffsetX: Float? = null,
-    val fontOffsetY: Float? = null,
     val isItalic: Boolean? = null,
     val colorModifier: Color? = null,
     val scaleModifier: Float? = null,
@@ -270,8 +268,6 @@ open class Markdown : WidgetGroup {
     private companion object{
       val defaultFont = FontEntry(
         Fonts.def,
-        0f,
-        0f,
         false,
         Color.white,
         1f

@@ -8,7 +8,7 @@ val mindustryVersion = "v156"
 val arcVersion = "v156"
 
 group = "com.github.ebwilson"
-version = "1.1"
+version = "1.2"
 
 repositories {
   mavenLocal()

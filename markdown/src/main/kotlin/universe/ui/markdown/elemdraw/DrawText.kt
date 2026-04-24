@@ -6,7 +6,8 @@ import arc.graphics.gl.Shader
 import arc.scene.ui.layout.Scl
 import universe.ui.markdown.RendererContext
 
-private const val MAX_SPLITTABLE_WORD_SIZE = 32
+private const val MAX_SPLITTABLE_WIDTH = 32*16
+private val wordSplitMatcher = Regex("[^a-zA-Z0-9_]")
 
 val distanceFieldShader: Shader = createDistanceFieldShader()
 
@@ -71,80 +72,46 @@ fun RendererContext.drawTextWrap(
     )
   }
 ) {
-  val data = font.getData()
-
-  var builder = StringBuilder()
-  var splitIndex = 0
-  var nonSpaceNow = false
-
-  var curr = getScope()
-
-  var currOff = curr.currOffsetX
-  var currIndex = 0
-
   if (mdShouldWrap) {
-    str.forEach { char ->
-      builder.append(char)
-      currIndex++
+    val data = font.getData()
 
-      if (char.isWhitespace()) {
-        if (nonSpaceNow) {
-          nonSpaceNow = false
-          splitIndex = currIndex
-        }
-      }
-      else {
-        nonSpaceNow = true
+    var lastIndex = 0
+    var splitIndex = 0
+    var currWidth = 0f
+    var splitWidth = 0f
 
-        if (currIndex - splitIndex > MAX_SPLITTABLE_WORD_SIZE) {
-          splitIndex = -1
-          nonSpaceNow = false
-        }
+    var currScope = getScope()
+    str.forEachIndexed { index, c ->
+      val glyph = data.getGlyph(c)
+
+      if (wordSplitMatcher.matches(c.toString())) {
+        splitIndex = index
+        splitWidth = 0f
       }
 
-      val glyph = data.getGlyph(char)
-      if (currOff + glyph.xadvance*scl > curr.boundX - curr.marginRight) {
-        if (splitIndex < 0)
-          splitIndex = builder.length - 1
-
-        val p1 = builder.substring(0, splitIndex)
-        doDraw.get(p1)
-
-        curr = row(Scl.scl(mdStyle.linesPadding))
-
-        builder = StringBuilder(
-          if (splitIndex < builder.length) builder.substring(splitIndex).trimStart()
-          else ""
-        )
-        splitIndex = 0
-        nonSpaceNow = builder.isNotBlank()
-        currIndex = builder.length - 1
-        currOff = curr.currOffsetX + builder.sumOf { data.getGlyph(it).xadvance }*scl
+      if (splitWidth + glyph.xadvance > MAX_SPLITTABLE_WIDTH) {
+        splitIndex = index
       }
-      else {
-        currOff += glyph.xadvance*scl
+
+      if (currWidth + glyph.xadvance*scl > currScope.boundX - currScope.currOffsetX - currScope.marginRight) {
+        val appendText = str.substring(lastIndex, splitIndex)
+        val remText = str.substring(splitIndex, index).trimStart()
+
+        doDraw.get(appendText)
+        currScope = row(Scl.scl(mdStyle.linesPadding))
+
+        lastIndex = splitIndex
+        splitIndex = index
+        splitWidth = remText.sumOf { data.getGlyph(it).xadvance }.toFloat()
+        currWidth = splitWidth*scl
       }
+
+      currWidth += glyph.xadvance*scl
+      splitWidth += glyph.xadvance
     }
 
-    if (builder.any()) {
-      var w = 0f
-      var l = 0
-
-      builder.forEachIndexed { i, char ->
-        val g = data.getGlyph(char)
-        w += g.xadvance*scl
-
-        if (curr.currOffsetX + w > curr.boundX - curr.marginRight) {
-          doDraw.get(builder.substring(l, i))
-          row(Scl.scl(mdStyle.linesPadding))
-          l = i
-          w = 0f
-        }
-      }
-
-      if (l < builder.length){
-        doDraw.get(builder.substring(l))
-      }
+    if (lastIndex < str.length - 1) {
+      doDraw.get(str.substring(lastIndex))
     }
   }
   else {
