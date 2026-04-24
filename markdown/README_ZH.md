@@ -273,7 +273,7 @@ URL路径包含若干默认定义，目前支持多种URL协议：
 
 - `http`/`https`：超文本传输协议，用于从web地址获取图像资源
 
-  例如：`https://github.com/EB-wilson/Helium/blob/master/icon.png
+  例如：`https://github.com/EB-wilson/Helium/blob/master/icon.png`
 - `file`：本地文件路径，从本机的文件系统中定位文件资源，注意，这使用的是客户端上的文件，并不会将编译时设备上的文件打包，较少使用。
 
   例如：`file:///C:/User/UserName/images/sample.png`

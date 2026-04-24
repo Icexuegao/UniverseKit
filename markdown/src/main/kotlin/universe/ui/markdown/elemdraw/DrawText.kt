@@ -110,7 +110,7 @@ fun RendererContext.drawTextWrap(
       splitWidth += glyph.xadvance
     }
 
-    if (lastIndex < str.length - 1) {
+    if (lastIndex < str.length) {
       doDraw.get(str.substring(lastIndex))
     }
   }

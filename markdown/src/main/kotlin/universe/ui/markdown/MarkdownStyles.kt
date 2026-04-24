@@ -70,6 +70,8 @@ object MarkdownStyles {
   val defaultMD: MarkdownStyle = makeDefault()
 
   fun makeDefault(): MarkdownStyle = MarkdownStyle().apply {
+    loadingImg = Tex.nomap
+
     linesPadding = 16f
     paragraphPadding = 32f
 

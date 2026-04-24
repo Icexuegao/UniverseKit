@@ -276,6 +276,8 @@ open class Markdown : WidgetGroup {
       val defaultDraw = BaseDrawable()
     }
 
+    var loadingImg: Drawable = defaultDraw
+
     //globals
     var linesPadding: Float = 0f
     var paragraphPadding: Float = 0f

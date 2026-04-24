@@ -7,6 +7,7 @@ import arc.graphics.g2d.TextureRegion
 import arc.math.Mathf
 import arc.scene.event.ClickListener
 import arc.scene.style.BaseDrawable
+import arc.scene.style.Drawable
 import arc.scene.style.TextureRegionDrawable
 import arc.scene.ui.Button
 import arc.scene.ui.layout.Scl
@@ -280,33 +281,55 @@ open class BaseProvider: MarkdownProvider, CurtainProvider, InsProvider, Striket
     val attributes = node.findChild { it is ImageAttributes } as? ImageAttributes
 
     val url = node.destination
-    val drawable = resolveResource(url) { input ->
-      val res = TextureRegionDrawable((Tex.nomap as TextureRegionDrawable).region)
-      thread {
-        try {
-          val bytes = input.open().readBytes()
-
-          Core.app.post {
-            val pixmap = Pixmap(bytes)
-            val texture = Texture(pixmap)
-            res.set(TextureRegion(texture))
-            mdInvalidate()
+    val drawable = try {
+      resolveResource(url) { input ->
+        var resource: Drawable? = null
+        val res = object : BaseDrawable(){
+          override fun draw(x: Float, y: Float, width: Float, height: Float) {
+            resource?.draw(x, y, width, height)
+            ?: mdStyle.loadingImg.draw(x, y, width, height)
           }
-        } catch (e: Exception) {
-          Core.app.post { invalidResource(url) }
-          Log.err(e)
-        } finally {
-          input.close()
         }
-      }
+        thread {
+          try {
+            val bytes = input.open().readBytes()
 
-      res
+            Core.app.post {
+              val pixmap = Pixmap(bytes)
+              val texture = Texture(pixmap)
+              resource = TextureRegionDrawable(TextureRegion(texture))
+              mdInvalidate()
+            }
+          } catch (e: Exception) {
+            Core.app.post { invalidResource(url) }
+            Log.err(e)
+          } finally {
+            input.close()
+          }
+        }
+
+        res
+      }
+    } catch (_: Exception) {
+      mdStyle.loadingImg
     }
+
+    val lastIsSoftBreak = node.previous is SoftLineBreak
 
     attributes?.let {
       val width = it.attributes["width"]?.toFloat()?:0f
       val height = it.attributes["height"]?.toFloat()?:0f
       val scaling = Scaling.entries.find { s -> s.name == it.attributes["scaling"] }?: Scaling.stretch
+
+      val size = scaling.apply(
+        drawable.minWidth, drawable.minHeight,
+        width, height
+      )
+
+      val scope = getScope()
+      if (lastIsSoftBreak || scope.currOffsetX + size.x >= scope.boundX - scope.marginRight) {
+        row(mdStyle.linesPadding)
+      }
 
       draw(DrawImg.get(
         drawable,
@@ -314,7 +337,13 @@ open class BaseProvider: MarkdownProvider, CurtainProvider, InsProvider, Striket
         widthModifier = width,
         heightModifier = height,
       ))
-    }?: draw(DrawImg.get(drawable))
+    }?: run {
+      val scope = getScope()
+      if (lastIsSoftBreak || scope.currOffsetX + drawable.minWidth >= scope.boundX - scope.marginRight) {
+        row(mdStyle.linesPadding)
+      }
+      draw(DrawImg.get(drawable))
+    }
   }
 
   override fun RendererContext.add(node: Emphasis) {

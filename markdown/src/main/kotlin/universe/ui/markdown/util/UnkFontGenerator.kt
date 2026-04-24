@@ -489,7 +489,7 @@ open class UnkFontGenerator @JvmOverloads constructor(fontFile: Fi, faceIndex: I
     if (!loadChar(c.code, getLoadingFlags(parameter))) return null
 
     val slot = face.glyph
-    var mainGlyph = slot.getGlyph()
+    var mainGlyph = slot.glyph
     try {
       mainGlyph.toBitmap(if (parameter.mono) FreeType.FT_RENDER_MODE_MONO else FreeType.FT_RENDER_MODE_NORMAL)
     } catch (e: ArcRuntimeException) {
