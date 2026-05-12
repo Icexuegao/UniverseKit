@@ -11,7 +11,7 @@ class Desktop9StaticInvoker<R>(method: Method): StaticInvoker<R> {
     private val lookup = MethodHandles.lookup()
   }
 
-  private val methodHandle = lookup.unreflect(method)
+  private val methodHandle = lookup.unreflect(method).asFixedArity()
 
   override fun invoke() =
     methodHandle.invoke() as R

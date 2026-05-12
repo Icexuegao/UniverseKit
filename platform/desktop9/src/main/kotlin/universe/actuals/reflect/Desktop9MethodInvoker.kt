@@ -2,6 +2,7 @@ package universe.actuals.reflect
 
 import universe.expects.reflect.MethodInvoker
 import java.lang.invoke.MethodHandles
+import java.lang.invoke.MethodType
 import java.lang.reflect.Method
 
 @Suppress("UNCHECKED_CAST")
@@ -10,7 +11,7 @@ class Desktop9MethodInvoker<R>(method: Method): MethodInvoker<R> {
     private val lookup = MethodHandles.lookup()
   }
 
-  private val methodHandle = lookup.unreflect(method)
+  private val methodHandle = lookup.unreflect(method).asFixedArity()
 
   override fun <O> invoke(obj: O) =
     methodHandle.invoke(obj) as R

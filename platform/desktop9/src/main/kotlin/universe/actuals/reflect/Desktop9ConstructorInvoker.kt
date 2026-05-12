@@ -2,6 +2,7 @@ package universe.actuals.reflect
 
 import universe.expects.reflect.ConstructorInvoker
 import java.lang.invoke.MethodHandles
+import java.lang.invoke.MethodType
 import java.lang.reflect.Constructor
 
 @Suppress("UNCHECKED_CAST")
@@ -10,7 +11,7 @@ class Desktop9ConstructorInvoker<T>(constructor: Constructor<T>): ConstructorInv
     private val lookup = MethodHandles.lookup()
   }
 
-  private val methodHandle = lookup.unreflectConstructor(constructor)
+  private val methodHandle = lookup.unreflectConstructor(constructor).asFixedArity()
 
   override fun newInstance() =
     methodHandle.invoke() as T

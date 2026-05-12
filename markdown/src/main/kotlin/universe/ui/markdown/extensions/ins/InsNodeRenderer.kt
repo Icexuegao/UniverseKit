@@ -1,5 +1,6 @@
 package universe.ui.markdown.extensions.ins
 
+import mindustry.logic.LAccess
 import org.commonmark.ext.ins.Ins
 import org.commonmark.node.CustomNode
 import org.commonmark.node.Node

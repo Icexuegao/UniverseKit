@@ -1,6 +1,5 @@
 package universe.ui.markdown.extensions.curtain
 
-import org.commonmark.node.Code
 import org.commonmark.node.Text
 import org.commonmark.parser.beta.InlineContentParser
 import org.commonmark.parser.beta.InlineContentParserFactory
@@ -25,7 +24,7 @@ class CurtainParser internal constructor() : InlineContentParser {
       if (count == openingTicks) {
         val node = Curtain()
 
-        var content = scanner.getSource(afterOpening, beforeClosing).getContent()
+        var content = scanner.getSource(afterOpening, beforeClosing).content
         content = content.replace('\n', ' ')
 
         if (content.length >= 3 && content[0] == ' ' && content[content.length - 1] == ' ' &&
@@ -40,7 +39,7 @@ class CurtainParser internal constructor() : InlineContentParser {
     }
 
     val source = scanner.getSource(start, afterOpening)
-    val text = Text(source.getContent())
+    val text = Text(source.content)
     return ParsedInline.of(text, afterOpening)
   }
 
