@@ -127,7 +127,7 @@ inline fun <reified O : Any> accessChar(name: String) =
 inline fun <reified T: Any?> accessStaticField(property: KProperty<T>) =
   property.javaField?.let { FieldAccessorStatic<T>(it) }
   ?: throw IllegalArgumentException("this property don't have a java field.")
-inline fun <reified T: Any> KClass<*>.accessField(name: String) =
+inline fun <reified T: Any?> KClass<*>.accessField(name: String) =
   FieldAccessorStatic<T>(reflection.findField(this, name).also {
     if (!it.type.isAssignableFrom(T::class.asType()))
       throw IllegalArgumentException("field $it type is not instance of ${T::class.asType()}")

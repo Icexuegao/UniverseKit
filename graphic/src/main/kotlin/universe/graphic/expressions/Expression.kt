@@ -1,8 +1,13 @@
 package universe.graphic.expressions
 
+import kotlin.math.asin
+import kotlin.math.atan
+import kotlin.math.cos
 import kotlin.math.exp
 import kotlin.math.pow
 import kotlin.math.sin
+import kotlin.math.sqrt
+import kotlin.math.tan
 
 abstract class Expression {
   abstract fun diff(variable: Variable): Expression
@@ -25,10 +30,17 @@ fun vari(name: String) = Variable(name)
 
 fun ln(expression: Expression) = Ln(expression).simplify()
 fun exp(base: Expression) = Exp(base).simplify()
+
 fun sin(expression: Expression) = Sin(expression).simplify()
 fun cos(expression: Expression) = Cos(expression).simplify()
+fun tan(expression: Expression) = Tan(expression).simplify()
+
+fun asin(expression: Expression) = ArcSin(expression).simplify()
+fun acos(expression: Expression) = ArcCos(expression).simplify()
+fun atan(expression: Expression) = ArcTan(expression).simplify()
 
 fun pow(base: Expression, exponent: Constant) = Power(base, exponent).simplify()
+fun sqrt(base: Expression) = Sqrt(base).simplify()
 fun exp(base: Constant, exponent: Expression) = Exponential(base, exponent).simplify()
 
 fun vec2(v1: Expression, v2: Expression) = Vec2(v1, v2).simplify()
@@ -222,7 +234,7 @@ class Sin(
   val exp: Expression
 ): Expression() {
   override fun diff(variable: Variable): Expression =
-    Cos(exp) * exp.diff(variable)
+    cos(exp) * exp.diff(variable)
 
   override fun simplify(): Expression {
     return when (val e = exp.simplify()) {
@@ -238,7 +250,7 @@ class Cos(
   val exp: Expression
 ): Expression() {
   override fun diff(variable: Variable): Expression =
-    -Sin(exp) * exp.diff(variable)
+    -sin(exp) * exp.diff(variable)
 
   override fun simplify(): Expression {
     return when (val e = exp.simplify()) {
@@ -248,6 +260,70 @@ class Cos(
   }
 
   override fun toString(): String = "cos($exp)"
+}
+
+class Tan(
+  val exp: Expression
+): Expression() {
+  override fun diff(variable: Variable): Expression =
+    pow(const(1.0)/cos(exp), const(2.0))*exp.diff(variable)
+
+  override fun simplify(): Expression {
+    return when (val e = exp.simplify()) {
+      is Constant -> const(tan(e.value))
+      else -> this
+    }
+  }
+
+  override fun toString(): String = "tan($exp)"
+}
+
+class ArcSin(
+  val exp: Expression
+): Expression() {
+  override fun diff(variable: Variable): Expression =
+    const(1.0)/sqrt(const(1.0) - pow(exp, const(2.0)))*exp.diff(variable)
+
+  override fun simplify(): Expression {
+    return when (val e = exp.simplify()) {
+      is Constant -> const(asin(e.value))
+      else -> this
+    }
+  }
+
+  override fun toString(): String = "asin($exp)"
+}
+
+class ArcCos(
+  val exp: Expression
+): Expression() {
+  override fun diff(variable: Variable): Expression =
+    -const(1.0)/sqrt(const(1.0) - pow(exp, const(2.0)))*exp.diff(variable)
+
+  override fun simplify(): Expression {
+    return when (val e = exp.simplify()) {
+      is Constant -> const(asin(e.value))
+      else -> this
+    }
+  }
+
+  override fun toString(): String = "acos($exp)"
+}
+
+class ArcTan(
+  val exp: Expression
+): Expression() {
+  override fun diff(variable: Variable): Expression =
+    const(1.0)/(const(1.0) + pow(exp, const(2.0)))*exp.diff(variable)
+
+  override fun simplify(): Expression {
+    return when (val e = exp.simplify()) {
+      is Constant -> const(atan(e.value))
+      else -> this
+    }
+  }
+
+  override fun toString(): String = "atan($exp)"
 }
 
 class Ln(
@@ -279,6 +355,7 @@ class Power(
     val e = exponent
     return when {
       b is Constant -> const(b.value.pow(e.value))
+      e.value == 0.5 -> sqrt(expBase)
       e.value == 0.0 -> const(1.0)
       e.value == 1.0 -> b
       else -> this
@@ -286,6 +363,22 @@ class Power(
   }
 
   override fun toString(): String = "pow($expBase, $exponent)"
+}
+
+class Sqrt(
+  val expBase: Expression,
+): Expression() {
+  override fun diff(variable: Variable): Expression =
+    const(0.5)/sqrt(expBase)*expBase.diff(variable)
+
+  override fun simplify(): Expression {
+    return when (val b = expBase.simplify()) {
+      is Constant -> const(sqrt(b.value))
+      else -> this
+    }
+  }
+
+  override fun toString(): String = "sqrt($expBase)"
 }
 
 class Exponential(
@@ -313,7 +406,7 @@ class Exp(
   val exp: Expression
 ): Expression() {
   override fun diff(variable: Variable): Expression =
-    Exp(exp)*exp.diff(variable)
+    exp(exp)*exp.diff(variable)
 
   override fun simplify(): Expression {
     return when (val e = exp.simplify()) {

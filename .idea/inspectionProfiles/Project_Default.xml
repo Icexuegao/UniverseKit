@@ -9,6 +9,7 @@
           <option value="UniverseKit.markdown" />
           <option value="UniverseKit.reflection" />
           <option value="UniverseKit.utilities" />
+          <option value="UniverseKit.graphic" />
         </list>
       </option>
       <option name="ignoredPackages">
@@ -16,10 +17,12 @@
           <option value="org.lz4:lz4-java:1.8.0" />
           <option value="org.lz4:lz4-java:1.8.0" />
           <option value="org.lz4:lz4-java:1.8.0" />
+          <option value="org.lz4:lz4-java:1.8.0" />
         </list>
       </option>
       <option name="ignoredReasons">
         <list>
+          <option value="不可利用" />
           <option value="不可利用" />
           <option value="不可利用" />
           <option value="不可利用" />

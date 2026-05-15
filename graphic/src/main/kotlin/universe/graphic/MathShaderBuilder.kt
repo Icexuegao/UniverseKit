@@ -3,9 +3,10 @@ package universe.graphic
 import arc.graphics.gl.Shader
 import universe.graphic.expressions.*
 
-abstract class MathShaderBuilder() {
+class MathShaderBuilder() {
   companion object {
-
+    val argX = vari("x")
+    val argY = vari("y")
   }
 
   private val uniforms = mutableListOf<Uniform>()
@@ -13,13 +14,16 @@ abstract class MathShaderBuilder() {
   private lateinit var function: Expression
   private lateinit var gradient: Expression
 
-  fun makeUniform(name: String): Uniform = Uniform(name).also { uniforms.add(it) }
-  fun addNamedFunc(function: NamedFunction) = also { namedFunctions.add(function) }
+  fun makeUniform(name: String, type: String): Uniform = Uniform(name, type).also { uniforms.add(it) }
+  fun addNamedFunc(name: String, function: Expression) = also { namedFunctions.add(NamedFunction(
+    name,
+    function
+  )) }
 
   fun setFunction(function: Expression) = also { it.function = function }
   fun setGradient(function: Expression) = also { it.gradient = function }
 
-  fun build(): Shader {
+  fun build(): MathShader {
     val varBuilder = StringBuilder()
     namedFunctions.forEach {
       varBuilder.append("${it.type} ${it.name} = ${it.expression};\n")
@@ -55,13 +59,45 @@ abstract class MathShaderBuilder() {
       }
       """.trimIndent()
 
-    val fragmentShader = """
-      varying vec2 v_texCoords;
+    val fragmentShader =
+      """
+      uniform float u_dispersion;
+      uniform float u_lowerBound;
+      uniform float u_upperBound;
+      uniform float u_sclX;
+      uniform float u_sclY;
+      uniform sampler2D u_texture;
+      
+      ${
+        uniforms.joinToString("\n") {
+          "uniform ${it.type} ${it.name};"
+        }
+      }
+      
+      varying vec4 v_color;
       varying vec4 v_mix_color;
-      varying vec4 v_texCoords;
+      varying vec2 v_texCoords;
+      
+      void main(){
+        vec4 c = texture2D(u_texture, v_texCoords);
+        vec4 mixed = vec4(mix(v_color, v_mix_color, v_mix_color.a).rgb, v_color.a)*c;
+        
+        float x = ((v_texCoords.x - 0.5)*2.0)*u_sclX;
+        float y = ((v_texCoords.y - 0.5)*2.0)/u_sclY;
+        
+        $varBuilder
+        
+        float res_func = $function;
+        vec2 grad_func = $gradient;
+        float grad = length(grad_func);
+        
+        float alpha = u_dispersion*grad/(abs(res_func) + u_dispersion*grad);
+        alpha = max(min((alpha - u_lowerBound)/(u_upperBound - u_lowerBound), 1.0), 0.0)*mixed.a;
+        gl_FragColor = vec4(mixed.r, mixed.g, mixed.b, alpha);
+      }
       """.trimIndent()
 
-    TODO()
+    return MathShader(vertexShader, fragmentShader, uniforms)
   }
 
   open class NamedFunction(
@@ -115,6 +151,7 @@ abstract class MathShaderBuilder() {
 
   class Uniform(
     name: String,
+    val type: String,
   ): Variable(name) {
     lateinit var shader: Shader
 

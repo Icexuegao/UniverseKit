@@ -32,6 +32,8 @@ repositories {
 dependencies {
   compileOnly("com.github.Anuken.Arc:arc-core:${arcVersion}")
   compileOnly("com.github.Anuken.Mindustry:core:${mindustryVersion}")
+  testImplementation("com.github.Anuken.Arc:arc-core:${arcVersion}")
+  testImplementation("com.github.Anuken.Mindustry:core:${mindustryVersion}")
   implementation(kotlin("stdlib-jdk8"))
 }
 
