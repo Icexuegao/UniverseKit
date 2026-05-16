@@ -4,11 +4,8 @@ plugins {
   kotlin("jvm") version "2.2.20"
 }
 
-val mindustryVersion = "v156"
-val arcVersion = "v156"
-
 group = "com.github.ebwilson"
-version = "1.3"
+version = properties["version"] as String
 
 repositories {
   mavenLocal()

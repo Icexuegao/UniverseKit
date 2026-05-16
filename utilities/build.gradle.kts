@@ -5,9 +5,8 @@ plugins {
   `maven-publish`
 }
 
-val mindustryVersion = "v154"
-val arcVersion = "v154"
-val commonmarkVersion = "0.27.1"
+val mindustryVersion = properties["libs.mindustry.version"]
+val arcVersion = properties["libs.arc.version"]
 
 publishing {
   publications {
@@ -33,12 +32,6 @@ repositories {
 dependencies {
   compileOnly("com.github.Anuken.Arc:arc-core:$arcVersion")
   compileOnly("com.github.Anuken.Mindustry:core:$mindustryVersion")
-
-  implementation("org.commonmark:commonmark:$commonmarkVersion")
-  implementation("org.commonmark:commonmark-ext-gfm-tables:$commonmarkVersion")
-  implementation("org.commonmark:commonmark-ext-gfm-strikethrough:$commonmarkVersion")
-  implementation("org.commonmark:commonmark-ext-ins:$commonmarkVersion")
-  implementation("org.commonmark:commonmark-ext-image-attributes:$commonmarkVersion")
 
   implementation(kotlin("stdlib-jdk8"))
   implementation(kotlin("reflect"))

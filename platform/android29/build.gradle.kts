@@ -6,9 +6,6 @@ plugins {
   `maven-publish`
 }
 
-val mindustryVersion = "v154"
-val arcVersion = "v154"
-
 publishing {
   publications {
     create<MavenPublication>("maven") {

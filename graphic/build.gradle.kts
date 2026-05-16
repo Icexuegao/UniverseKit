@@ -5,8 +5,8 @@ plugins {
   `maven-publish`
 }
 
-val mindustryVersion = "v154"
-val arcVersion = "v154"
+val mindustryVersion = properties["libs.mindustry.version"]
+val arcVersion = properties["libs.arc.version"]
 
 publishing {
   publications {
