@@ -8,14 +8,10 @@ import arc.graphics.g2d.TextureRegion
 import arc.graphics.gl.Shader
 import universe.graphic.MathShaderBuilder.Companion.argX
 import universe.graphic.MathShaderBuilder.Companion.argY
-import universe.graphic.expressions.const
-import universe.graphic.expressions.minus
-import universe.graphic.expressions.plus
-import universe.graphic.expressions.sin
-import universe.graphic.expressions.times
+import universe.graphic.expressions.*
 
 
-class MathShader(
+open class MathShader(
   vert: String,
   frag: String,
   uniforms: List<MathShaderBuilder.Uniform>,
@@ -47,7 +43,7 @@ class MathShader(
     val ovalShader = MathShaderBuilder().apply {
       val a = makeUniform("a", "float")
       val b = makeUniform("b", "float")
-      setFunction(argX*argX*a + argY*argY*b - const(1f))
+      setFunction(argX*argX/(a*a) + argY*argY/(b*b) - const(1f))
     }.build()
 
     val curveCircleShader = MathShaderBuilder().apply {
@@ -55,12 +51,9 @@ class MathShader(
       val roundScale = makeUniform("roundScale", "float")
       val curvature = makeUniform("curvature", "float")
 
-      val arctan = addNamedFunc(
-        "arctan",
-        roundScale*atan()
-      )
-      setFunction()
-    }
+      setFunction(argX*argX + argY*argY - radius - curvature*sin(roundScale*atan(argY/argX)))
+      setFactor(clamp((len(argX, argY) - (radius - curvature)*const(0.3f))/((radius - curvature)*const(0.5f)), const(0f), const(1f)))
+    }.build()
   }
 
   var dispersion = 1f

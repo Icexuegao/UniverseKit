@@ -14,14 +14,33 @@ class MathShaderBuilder() {
   private lateinit var function: Expression
   private lateinit var gradient: Expression
 
+  private var factor: Expression? = null
+
   fun makeUniform(name: String, type: String): Uniform = Uniform(name, type).also { uniforms.add(it) }
-  fun addNamedFunc(name: String, function: Expression) = also { namedFunctions.add(NamedFunction(
+  fun addNamedFunc(
+    name: String,
+    function: Expression,
+    type: String,
+    vararg variables: Variable
+  ) = NamedFunction(
     name,
-    function
-  )) }
+    function,
+    type,
+    *variables
+  ).also { namedFunctions.add(it) }
+  fun addNamedFunc(
+    name: String,
+    function: Expression,
+    vararg variables: Variable
+  ) = NamedFunction(
+    name,
+    function,
+    *variables
+  ).also { namedFunctions.add(it) }
 
   fun setFunction(function: Expression) = also { it.function = function }
   fun setGradient(function: Expression) = also { it.gradient = function }
+  fun setFactor(function: Expression) = also { it.factor = function }
 
   fun build(): MathShader {
     val varBuilder = StringBuilder()
@@ -83,7 +102,7 @@ class MathShaderBuilder() {
         vec4 mixed = vec4(mix(v_color, v_mix_color, v_mix_color.a).rgb, v_color.a)*c;
         
         float x = ((v_texCoords.x - 0.5)*2.0)*u_sclX;
-        float y = ((v_texCoords.y - 0.5)*2.0)/u_sclY;
+        float y = ((v_texCoords.y - 0.5)*2.0)*u_sclY;
         
         $varBuilder
         
@@ -92,7 +111,10 @@ class MathShaderBuilder() {
         float grad = length(grad_func);
         
         float alpha = u_dispersion*grad/(abs(res_func) + u_dispersion*grad);
-        alpha = max(min((alpha - u_lowerBound)/(u_upperBound - u_lowerBound), 1.0), 0.0)*mixed.a;
+        alpha = clamp((alpha - u_lowerBound)/(u_upperBound - u_lowerBound), 0.0, 1.0)*mixed.a;
+        
+        ${if (factor == null) "" else "alpha = $factor*alpha;"}
+        
         gl_FragColor = vec4(mixed.r, mixed.g, mixed.b, alpha);
       }
       """.trimIndent()
@@ -103,9 +125,15 @@ class MathShaderBuilder() {
   open class NamedFunction(
     name: String,
     val expression: Expression,
-    val type: String = predictType(expression),
+    val type: String,
     vararg val args: Variable,
   ): Variable(name) {
+    constructor(
+      name: String,
+      expression: Expression,
+      vararg args: Variable,
+    ): this(name, expression, predictType(expression), *args)
+
     companion object {
       private fun predictType(expression: Expression): String = when(expression){
         is UnaryMinus -> predictType(expression.exp)

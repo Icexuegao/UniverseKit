@@ -1,13 +1,6 @@
 package universe.graphic.expressions
 
-import kotlin.math.asin
-import kotlin.math.atan
-import kotlin.math.cos
-import kotlin.math.exp
-import kotlin.math.pow
-import kotlin.math.sin
-import kotlin.math.sqrt
-import kotlin.math.tan
+import kotlin.math.*
 
 abstract class Expression {
   abstract fun diff(variable: Variable): Expression
@@ -22,14 +15,20 @@ operator fun Expression.div(variable: Expression): Expression = Division(this, v
 
 operator fun Expression.unaryMinus(): Expression = UnaryMinus(this)
 
-fun const(value: Double) = Constant(value)
-fun const(value: Float) = Constant(value.toDouble())
-fun const(value: Int) = Constant(value.toDouble())
+fun const(value: Double) = Constant(value.toFloat())
+fun const(value: Float) = Constant(value)
+fun const(value: Int) = Constant(value.toFloat())
+
+fun min(exp: Expression, value: Expression) = Min(exp, value).simplify()
+fun max(exp: Expression, value: Expression) = Max(exp, value).simplify()
+fun clamp(exp: Expression, min: Expression, max: Expression) = Clamp(exp, min, max).simplify()
 
 fun vari(name: String) = Variable(name)
 
 fun ln(expression: Expression) = Ln(expression).simplify()
 fun exp(base: Expression) = Exp(base).simplify()
+
+fun len(x: Expression, y: Expression) = Length(x, y).simplify()
 
 fun sin(expression: Expression) = Sin(expression).simplify()
 fun cos(expression: Expression) = Cos(expression).simplify()
@@ -48,7 +47,7 @@ fun vec3(v1: Expression, v2: Expression, v3: Expression) = Vec3(v1, v2, v3).simp
 fun vec4(v1: Expression, v2: Expression, v3: Expression, v4: Expression) = Vec4(v1, v2, v3, v4).simplify()
 
 class Constant(
-  val value: Double
+  val value: Float
 ) : Expression() {
   override fun diff(variable: Variable): Expression = const(0.0)
 
@@ -114,12 +113,21 @@ class Plus(
     val l = expLeft.simplify()
     val r = expRight.simplify()
     return when {
-      l is Constant && l.value == 0.0 -> r
-      r is Constant && r.value == 0.0 -> l
+      l is Constant && l.value == 0f -> r
+      r is Constant && r.value == 0f -> l
       l is Constant && r is Constant -> const(l.value + r.value)
       l is UnaryMinus && r is UnaryMinus -> -(l.exp + r.exp)
       l is UnaryMinus -> r - l.exp
       r is UnaryMinus -> l - r.exp
+      l is Variable && r is Variable && l.name == r.name -> const(2.0)*l
+      l is Variable && r is Times && r.expLeft is Constant && r.expRight is Variable && r.expRight.name == l.name ->
+        const(1.0 + r.expLeft.value)*l
+      l is Variable && r is Times && r.expRight is Constant && r.expLeft is Variable && r.expLeft.name == l.name ->
+        const(1.0 + r.expRight.value)*l
+      r is Variable && l is Times && l.expLeft is Constant && l.expRight is Variable && l.expRight.name == r.name ->
+        const(1.0 + l.expLeft.value)*r
+      r is Variable && l is Times && l.expRight is Constant && l.expLeft is Variable && l.expLeft.name == r.name ->
+        const(1.0 + l.expRight.value)*r
       else -> this
     }
   }
@@ -138,12 +146,21 @@ class Minus(
     val l = expLeft.simplify()
     val r = expRight.simplify()
     return when {
-      l is Constant && l.value == 0.0 -> -r
-      r is Constant && r.value == 0.0 -> l
+      l is Constant && l.value == 0f -> -r
+      r is Constant && r.value == 0f -> l
       l is Constant && r is Constant -> const(l.value - r.value)
       l is UnaryMinus && r is UnaryMinus -> r.exp - l.exp
       l is UnaryMinus -> -(l.exp + r)
       r is UnaryMinus -> l + r.exp
+      l is Variable && r is Variable && l.name == r.name -> const(0.0)
+      l is Variable && r is Times && r.expLeft is Constant && r.expRight is Variable && r.expRight.name == l.name ->
+        const(1.0 - r.expLeft.value)*l
+      l is Variable && r is Times && r.expRight is Constant && r.expLeft is Variable && r.expLeft.name == l.name ->
+        const(1.0 - r.expRight.value)*l
+      r is Variable && l is Times && l.expLeft is Constant && l.expRight is Variable && l.expRight.name == r.name ->
+        const(1.0 - l.expLeft.value)*r
+      r is Variable && l is Times && l.expRight is Constant && l.expLeft is Variable && l.expLeft.name == r.name ->
+        const(1.0 - l.expRight.value)*r
       else -> this
     }
   }
@@ -168,9 +185,9 @@ class Times(
     val l = expLeft.simplify()
     val r = expRight.simplify()
     return when {
-      (l is Constant && l.value == 0.0) || (r is Constant && r.value == 0.0) -> const(0.0)
-      l is Constant && l.value == 1.0 -> r
-      r is Constant && r.value == 1.0 -> l
+      (l is Constant && l.value == 0f) || (r is Constant && r.value == 0f) -> const(0f)
+      l is Constant && l.value == 1f -> r
+      r is Constant && r.value == 1f -> l
       l is Constant && r is Constant -> const(l.value * r.value)
       r is Constant && l is Times && l.expLeft is Constant ->
         Times(const(r.value*l.expLeft.value), l)
@@ -183,7 +200,7 @@ class Times(
     }
   }
 
-  override fun toString(): String = "$expLeft*$expRight"
+  override fun toString(): String = "($expLeft*$expRight)"
 }
 
 class Division(
@@ -191,7 +208,7 @@ class Division(
   val expRight: Expression,
 ): Expression() {
   override fun diff(variable: Variable): Expression =
-    (expLeft.diff(variable)*expRight - expLeft*expRight.diff(variable))/(expRight*expLeft)
+    (expLeft.diff(variable)*expRight - expLeft*expRight.diff(variable))/(expRight*expRight)
 
   private fun flowDivision(childFlow: (Division) -> Unit) {
     childFlow(this)
@@ -203,14 +220,15 @@ class Division(
     val l = expLeft.simplify()
     val r = expRight.simplify()
     return when {
-      l is Constant && l.value == 0.0 -> const(0.0)
-      r is Constant && r.value == 1.0 -> l
+      l is Constant && l.value == 0f -> const(0.0)
+      r is Constant && r.value == 1f -> l
       l is Constant && r is Constant -> const(l.value / r.value)
+      l is Variable && r is Variable && l.name == r.name -> const(1.0)
       else -> this
     }
   }
 
-  override fun toString(): String = "$expLeft/$expRight"
+  override fun toString(): String = "($expLeft/$expRight)"
 }
 
 class UnaryMinus(
@@ -227,7 +245,7 @@ class UnaryMinus(
     }
   }
 
-  override fun toString(): String = "-$exp"
+  override fun toString(): String = "(-$exp)"
 }
 
 class Sin(
@@ -334,8 +352,8 @@ class Ln(
 
   override fun simplify(): Expression {
     return when (val e = exp.simplify()) {
-      is Constant if e.value == 1.0 -> const(0.0)
-      is Constant if e.value == 0.0 -> const(Double.POSITIVE_INFINITY)
+      is Constant if e.value == 1f -> const(0.0)
+      is Constant if e.value == 0f -> const(Double.POSITIVE_INFINITY)
       else -> this
     }
   }
@@ -355,9 +373,9 @@ class Power(
     val e = exponent
     return when {
       b is Constant -> const(b.value.pow(e.value))
-      e.value == 0.5 -> sqrt(expBase)
-      e.value == 0.0 -> const(1.0)
-      e.value == 1.0 -> b
+      e.value == 0.5f -> sqrt(expBase)
+      e.value == 0f -> const(1.0)
+      e.value == 1f -> b
       else -> this
     }
   }
@@ -393,8 +411,8 @@ class Exponential(
     val eb = base
     return when {
       e is Constant -> const(eb.value.pow(e.value))
-      eb.value == 0.0 -> const(0.0)
-      eb.value == 1.0 -> const(1.0)
+      eb.value == 0f -> const(0.0)
+      eb.value == 1f -> const(1.0)
       else -> this
     }
   }
@@ -416,4 +434,56 @@ class Exp(
   }
 
   override fun toString(): String = "exp($exp)"
+}
+
+// Special
+class Length(
+  val expX: Expression,
+  val expY: Expression
+): Expression() {
+  private val composed = sqrt(expX*expX + expY*expY)
+
+  override fun diff(variable: Variable): Expression = composed.diff(variable)
+
+  override fun simplify(): Expression {
+    return when{
+      expX is Constant && expY is Constant -> const(sqrt(expX.value.pow(2f) + expY.value.pow(2f)))
+      else -> this
+    }
+  }
+
+  override fun toString(): String = "length(vec2($expX, $expY))"
+}
+
+// non-continuous
+class Abs(
+  val exp: Expression
+): Expression() {
+  override fun diff(variable: Variable): Expression = const(1.0)
+  override fun toString(): String = "abs($exp)"
+}
+
+class Max(
+  val exp: Expression,
+  val value: Expression
+): Expression() {
+  override fun diff(variable: Variable): Expression = exp.diff(variable)
+  override fun toString(): String = "max($value, $exp)"
+}
+
+class Min(
+  val exp: Expression,
+  val value: Expression
+): Expression() {
+  override fun diff(variable: Variable): Expression = exp.diff(variable)
+  override fun toString(): String = "min($value, $exp)"
+}
+
+class Clamp(
+  val exp: Expression,
+  val min: Expression,
+  val max: Expression
+): Expression() {
+  override fun diff(variable: Variable): Expression = exp.diff(variable)
+  override fun toString(): String = "clamp($exp, $min, $max)"
 }
