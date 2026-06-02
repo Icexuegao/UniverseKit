@@ -12,6 +12,7 @@ import kotlin.reflect.KClass
 interface ReflectionHandle {
   //field access
   fun findField(clazz: KClass<*>, name: String): Field
+  fun findStaticField(clazz: KClass<*>, name: String): Field
   fun makeAccessible(field: Field)
   fun makeMutable(field: Field)
   fun obtainFieldAccessor(field: Field): FieldAccessor

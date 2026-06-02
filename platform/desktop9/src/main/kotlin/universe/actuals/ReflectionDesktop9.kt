@@ -65,6 +65,8 @@ class ReflectionDesktop9: ReflectionHandle {
   }
 
   override fun findField(clazz: KClass<*>, name: String): Field = clazz.java.getDeclaredField(name)
+  override fun findStaticField(clazz: KClass<*>, name: String): Field = clazz.java.getDeclaredField(name)
+
   override fun makeAccessible(field: Field) {
     Demodulator.makeModuleOpen(
       field.type.module,

@@ -12,6 +12,7 @@ private class MutableLazy<T>(
   private val initializer: () -> T,
 ){
   var value: T? = null
+    private set
 
   operator fun getValue(thisRef: Any?, property: KProperty<*>): T{
     if (value == null){
@@ -29,7 +30,7 @@ private class MutableLazy<T>(
 object UniverseActual {
   private var platformProvider = getPlatform()
 
-  @JvmStatic var reflection: ReflectionHandle by MutableLazy{ platformProvider.getReflectionHandle() }
+  @JvmStatic var reflection: ReflectionHandle by MutableLazy { platformProvider.getReflectionHandle() }
     private set
 
   fun customPlatformProvider(platform: PlatformProvider) {

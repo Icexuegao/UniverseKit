@@ -20,6 +20,11 @@ class ReflectionAndroid29: ReflectionHandle {
   override fun findField(clazz: KClass<*>, name: String): Field =
     HiddenApiBypass.getInstanceFields(clazz.java).find { it.name == name } ?:
     throw NoSuchFieldException("Field $name not found in $clazz")
+
+  override fun findStaticField(clazz: KClass<*>, name: String): Field =
+    HiddenApiBypass.getStaticFields(clazz.java).find { it.name == name } ?:
+    throw NoSuchFieldException("Static field $name not found in $clazz")
+
   override fun makeAccessible(field: Field) {
     field.isAccessible = true
   }

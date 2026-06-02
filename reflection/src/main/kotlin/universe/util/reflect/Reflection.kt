@@ -128,7 +128,7 @@ inline fun <reified T: Any?> accessStaticField(property: KProperty<T>) =
   property.javaField?.let { FieldAccessorStatic<T>(it) }
   ?: throw IllegalArgumentException("this property don't have a java field.")
 inline fun <reified T: Any?> KClass<*>.accessField(name: String) =
-  FieldAccessorStatic<T>(reflection.findField(this, name).also {
+  FieldAccessorStatic<T>(reflection.findStaticField(this, name).also {
     if (!it.type.isAssignableFrom(T::class.asType()))
       throw IllegalArgumentException("field $it type is not instance of ${T::class.asType()}")
   })
@@ -136,7 +136,7 @@ fun accessStaticByte(property: KProperty<Byte>) =
   property.javaField?.let { ByteAccessorStatic(it) }
   ?: throw IllegalArgumentException("this property don't have a java field.")
 fun KClass<*>.accessByte(name: String) =
-  ByteAccessorStatic(reflection.findField(this, name).also {
+  ByteAccessorStatic(reflection.findStaticField(this, name).also {
     if (it.type != Byte::class.asType())
       throw IllegalArgumentException("field $it type is not byte")
   })
@@ -144,7 +144,7 @@ fun accessStaticShort(property: KProperty<Short>) =
   property.javaField?.let { ShortAccessorStatic(it) }
   ?: throw IllegalArgumentException("this property don't have a java field.")
 fun KClass<*>.accessShort(name: String) =
-  ShortAccessorStatic(reflection.findField(this, name).also {
+  ShortAccessorStatic(reflection.findStaticField(this, name).also {
     if (it.type != Short::class.asType())
       throw IllegalArgumentException("field $it type is not short")
   })
@@ -152,7 +152,7 @@ fun accessStaticInt(property: KProperty<Int>) =
   property.javaField?.let { IntAccessorStatic(it) }
   ?: throw IllegalArgumentException("this property don't have a java field.")
 fun KClass<*>.accessInt(name: String) =
-  IntAccessorStatic(reflection.findField(this, name).also {
+  IntAccessorStatic(reflection.findStaticField(this, name).also {
     if (it.type != Int::class.asType())
       throw IllegalArgumentException("field $it type is not int")
   })
@@ -160,7 +160,7 @@ fun accessStaticLong(property: KProperty<Long>) =
   property.javaField?.let { LongAccessorStatic(it) }
   ?: throw IllegalArgumentException("this property don't have a java field.")
 fun KClass<*>.accessLong(name: String) =
-  LongAccessorStatic(reflection.findField(this, name).also {
+  LongAccessorStatic(reflection.findStaticField(this, name).also {
     if (it.type != Long::class.asType())
       throw IllegalArgumentException("field $it type is not long")
   })
@@ -168,7 +168,7 @@ fun accessStaticFloat(property: KProperty<Float>) =
   property.javaField?.let { FloatAccessorStatic(it) }
   ?: throw IllegalArgumentException("this property don't have a java field.")
 fun KClass<*>.accessFloat(name: String) =
-  FloatAccessorStatic(reflection.findField(this, name).also {
+  FloatAccessorStatic(reflection.findStaticField(this, name).also {
     if (it.type != Float::class.asType())
       throw IllegalArgumentException("field $it type is not float")
   })
@@ -176,7 +176,7 @@ fun accessStaticDouble(property: KProperty<Double>) =
   property.javaField?.let { DoubleAccessorStatic(it) }
   ?: throw IllegalArgumentException("this property don't have a java field.")
 fun KClass<*>.accessDouble(name: String) =
-  DoubleAccessorStatic(reflection.findField(this, name).also {
+  DoubleAccessorStatic(reflection.findStaticField(this, name).also {
     if (it.type != Double::class.asType())
       throw IllegalArgumentException("field $it type is not double")
   })
@@ -184,7 +184,7 @@ fun accessStaticBoolean(property: KProperty<Boolean>) =
   property.javaField?.let { BooleanAccessorStatic(it) }
   ?: throw IllegalArgumentException("this property don't have a java field.")
 fun KClass<*>.accessBoolean(name: String) =
-  BooleanAccessorStatic(reflection.findField(this, name).also {
+  BooleanAccessorStatic(reflection.findStaticField(this, name).also {
     if (it.type != Boolean::class.asType())
       throw IllegalArgumentException("field $it type is not boolean")
   })
@@ -192,7 +192,7 @@ fun accessStaticChar(property: KProperty<Char>) =
   property.javaField?.let { CharAccessorStatic(it) }
   ?: throw IllegalArgumentException("this property don't have a java field.")
 fun KClass<*>.accessChar(name: String) =
-  CharAccessorStatic(reflection.findField(this, name).also {
+  CharAccessorStatic(reflection.findStaticField(this, name).also {
     if (it.type != Char::class.asType())
       throw IllegalArgumentException("field $it type is not boolean")
   })

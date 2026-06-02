@@ -20,6 +20,7 @@ class ReflectionDesktop: ReflectionHandle {
   private fun KClass<*>.asType() = javaPrimitiveType?:java
 
   override fun findField(clazz: KClass<*>, name: String): Field = clazz.java.getDeclaredField(name)
+  override fun findStaticField(clazz: KClass<*>, name: String): Field = clazz.java.getDeclaredField(name)
 
   override fun makeAccessible(field: Field) {
     field.isAccessible = true
